@@ -379,7 +379,7 @@ app_server <- function( input, output, session ) {
     cols <- colnames(read.csv("settings/export.csv"))
     
     data.frame(
-      session_id =  round(max(as.numeric(db$db$session_id), na.rm = T) + 1, digits = 0),
+      session_id =  ifelse(is.numeric(max(as.numeric(db$db$session_id), na.rm = T)), round(max(as.numeric(db$db$session_id), na.rm = T) + 1, digits = 0), 1),
       athlete_name = input$select_athlete,
       session_date = paste(substr(input$starttime, 1, 4), substr(input$starttime, 6, 7), substr(input$starttime, 9, 10), sep = '-'),
       season = "2020/21",
