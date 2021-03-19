@@ -1,0 +1,25 @@
+{
+    "id": "FA399A1F",
+    "path": "~/R/Accelerometer App/Open_Source_App/OpenTrack v-0-0-1.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1615750531192.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "cursorPosition": "202,11",
+        "scrollLine": "0",
+        "docOutlineVisible": "1"
+    },
+    "folds": "3|25|40|0|\n61|25|176|0|\n",
+    "lastKnownWriteTime": 1616148439,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1616148439830,
+    "read_only": false,
+    "read_only_alternatives": []
+}

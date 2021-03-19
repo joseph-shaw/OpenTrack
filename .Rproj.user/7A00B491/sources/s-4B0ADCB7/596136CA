@@ -1,0 +1,24 @@
+{
+    "id": "596136CA",
+    "path": "~/R/OpenTrack/dev/01_start.R",
+    "project_path": "dev/01_start.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1615913744782.0,
+    "source_on_save": false,
+    "relative_order": 9,
+    "properties": {
+        "cursorPosition": "49,55",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1615913937,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1615913937249,
+    "read_only": false,
+    "read_only_alternatives": []
+}
