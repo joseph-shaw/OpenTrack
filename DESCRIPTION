@@ -37,7 +37,7 @@ Imports:
     shinyWidgets,
     shinycssloaders,
     shinydashboard,
-    shinydashboardPlus,
+    shinydashboardPlus (>= 0.7.5),
     shinyjs,
     tidyr,
     xts,
