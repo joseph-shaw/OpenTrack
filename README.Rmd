@@ -23,7 +23,6 @@ Welcome to OpenTrack, an open-source platform for extracting training load varia
 
 The current version of OpenTrack outputs impact counts and magnitudes, jump counts and heights, PlayerLoad, and other common training load variables, as well as both raw and processed time-series for each device. It is also designed to work with both .csv and SQL databases, which can be edited from within the platform.
 
-
 ## Installation
 
 Right now, OpenTrack isn't the most simple thing to get up and running if you're not already an R user... I'm working on it, and will hopefully have a standalone platform available for non-R users before too long.
@@ -34,6 +33,7 @@ To run OpenTrack, you will need to 1) make a copy of this repository in your sys
 #install.packages("devtools")
 devtools::install_github("joseph-shaw/OpenTrack")
 ```
+Alternatively, you can just download the repo and build the package yourself.
 
 I'm pretty sure I should be able to just make all of the dependencies install automatically, but for now you'll have to install these manually I think:
 
@@ -43,6 +43,8 @@ devtools::install_github("cvarrichio/rowr")
 devtools::install_github("wleepang/shiny-directory-input")
 
 ```
+
+If you want to use SQL, there's a template of the database required in this repo.
 
 You will also need to alter several of the files within the settings folder ("~ R/OpenTrack/settings") before you get started.
 
@@ -61,6 +63,35 @@ Once installed, you can run the app with:
 
 ```{r example}
 #library(OpenTrack)
-OpenTrack::run_app()
+#run_app()
+#or
+#OpenTrack::run_app()
 ```
+
+## Using OpenTrack
+
+OpenTrack currently has four tabs. When you open the app you'll start at the data upload page. Here you will need to upload the data from your IMU(s). There are upload tabs for central/left/right devices. If you click these and the file browser isn't populating, you either haven't set the filepaths in 'filepaths.csv' or you're using SQL and you haven't logged in. Here you will also need to set the date/time the devices were turned on, the units of time that your device outputs, and if your vertical axis is flipped. 
+
+A couple of things to note here:
+- There's not currently a function to sync the three devices, so if the times are out of sync, the data will be out of sync
+- The time unit is currently 'time since turned on', and not a date-time unit. I'll probably look to add this in if there's demand for it
+
+Once you've uploaded the data and changed your settings, hit the 'Process' button and move to the 'Analyse Data' tab. Once it loads you'll find a plots of the central device (plot tab 1) and L/R devices (plot tab 2). You'll also find data inputs for details about the session, or space to add a new athlete to the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

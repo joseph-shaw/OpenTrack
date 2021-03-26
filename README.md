@@ -36,6 +36,9 @@ and install the package using:
 devtools::install_github("joseph-shaw/OpenTrack")
 ```
 
+Alternatively, you can just download the repo and build the package
+yourself.
+
 I’m pretty sure I should be able to just make all of the dependencies
 install automatically, but for now you’ll have to install these manually
 I think:
@@ -75,80 +78,7 @@ Once installed, you can run the app with:
 
 ``` r
 #library(OpenTrack)
-OpenTrack::run_app()
-#> Warning: replacing previous import 'DescTools::%like%' by 'data.table::%like%'
-#> when loading 'OpenTrack'
-#> Registered S3 methods overwritten by 'tibble':
-#>   method     from  
-#>   format.tbl pillar
-#>   print.tbl  pillar
-#> Warning: replacing previous import 'data.table::last' by 'dplyr::last' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::first' by 'dplyr::first' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::between' by 'dplyr::between'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'DescTools::CronbachAlpha' by
-#> 'fmsb::CronbachAlpha' when loading 'OpenTrack'
-#> Warning: replacing previous import 'DescTools::VIF' by 'fmsb::VIF' when loading
-#> 'OpenTrack'
-#> Warning: replacing previous import 'dplyr::combine' by 'gridExtra::combine' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::month' by 'lubridate::month'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::hour' by 'lubridate::hour' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::origin' by 'lubridate::origin' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::seconds' by 'lubridate::seconds' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::quarter' by 'lubridate::quarter'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::days' by 'lubridate::days' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::week' by 'lubridate::week' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::year' by 'lubridate::year' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::wday' by 'lubridate::wday' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::second' by 'lubridate::second'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::years' by 'lubridate::years' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::hours' by 'lubridate::hours' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::minute' by 'lubridate::minute'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'chron::minutes' by 'lubridate::minutes' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::mday' by 'lubridate::mday' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::yday' by 'lubridate::yday' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'data.table::isoweek' by 'lubridate::isoweek'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'ggplot2::last_plot' by 'plotly::last_plot'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'dplyr::count' by 'rowr::count' when loading
-#> 'OpenTrack'
-#> Warning: replacing previous import 'dplyr::coalesce' by 'rowr::coalesce' when
-#> loading 'OpenTrack'
-#> Warning: replacing previous import 'DT::dataTableOutput' by
-#> 'shiny::dataTableOutput' when loading 'OpenTrack'
-#> Warning: replacing previous import 'DT::renderDataTable' by
-#> 'shiny::renderDataTable' when loading 'OpenTrack'
-#> Warning: replacing previous import 'shiny::runExample' by 'shinyjs::runExample'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'shinyWidgets::alert' by 'shinyjs::alert'
-#> when loading 'OpenTrack'
-#> Warning: replacing previous import 'pool::show' by 'shinyjs::show' when loading
-#> 'OpenTrack'
-#> Warning: replacing previous import 'dplyr::last' by 'xts::last' when loading
-#> 'OpenTrack'
-#> Warning: replacing previous import 'dplyr::first' by 'xts::first' when loading
-#> 'OpenTrack'
-#> PhantomJS not found. You can install it with webshot::install_phantomjs(). If it is installed, please make sure the phantomjs executable can be found via the PATH variable.
+#run_app()
+#or
+#OpenTrack::run_app()
 ```
-
-<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
