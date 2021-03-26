@@ -23,11 +23,27 @@ which can be edited from within the platform.
 
 ## Installation
 
+Right now, OpenTrack isn’t the most simple thing to get up and running
+if you’re not already an R user… I’m working on it, and will hopefully
+have a standalone platform available for non-R users before too long.
+
 To run OpenTrack, you will need to 1) make a copy of this repository in
-your system’s ‘R’ folder, and 2) download and install the package using:
+your system’s ‘R’ folder, 2) install the dependencies, and 3) download
+and install the package using:
 
 ``` r
-install_github("joseph-shaw/OpenTrack")
+#install.packages("devtools")
+devtools::install_github("joseph-shaw/OpenTrack")
+```
+
+I’m pretty sure I should be able to just make all of the dependencies
+install automatically, but for now you’ll have to install these manually
+I think:
+
+``` r
+devtools::install_version("shinydashboardPlus", version = "0.7.5", repos = "http://cran.us.r-project.org")
+devtools::install_github("cvarrichio/rowr")
+devtools::install_github("wleepang/shiny-directory-input")
 ```
 
 You will also need to alter several of the files within the settings
@@ -55,12 +71,11 @@ folder (“\~ R/OpenTrack/settings”) before you get started.
   - export.csv: This file can be used to change the data that is
     exported. Simply delete a column to remove it from the export.
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+Once installed, you can run the app with:
 
 ``` r
-library(OpenTrack)
+#library(OpenTrack)
+OpenTrack::run_app()
 #> Warning: replacing previous import 'DescTools::%like%' by 'data.table::%like%'
 #> when loading 'OpenTrack'
 #> Registered S3 methods overwritten by 'tibble':
@@ -133,32 +148,7 @@ library(OpenTrack)
 #> 'OpenTrack'
 #> Warning: replacing previous import 'dplyr::first' by 'xts::first' when loading
 #> 'OpenTrack'
-## basic example code
+#> PhantomJS not found. You can install it with webshot::install_phantomjs(). If it is installed, please make sure the phantomjs executable can be found via the PATH variable.
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>

@@ -1,0 +1,25 @@
+{
+    "id": "20A400EA",
+    "path": "~/R/OpenTrack/R/app_server.R",
+    "project_path": "R/app_server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1616689321325.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "cursorPosition": "642,6",
+        "scrollLine": "633",
+        "docOutlineVisible": "1"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1616196093,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1616692678185,
+    "read_only": false,
+    "read_only_alternatives": []
+}

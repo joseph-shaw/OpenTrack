@@ -3,7 +3,7 @@
     "path": "~/R/OpenTrack/DESCRIPTION",
     "project_path": "DESCRIPTION",
     "type": "dcf",
-    "hash": "4050692279",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1616150751493.0,
@@ -11,7 +11,7 @@
     "relative_order": 9,
     "properties": {
         "cursorPosition": "33,9",
-        "scrollLine": "20"
+        "scrollLine": "0"
     },
     "folds": "",
     "lastKnownWriteTime": 1616252472,

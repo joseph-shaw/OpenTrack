@@ -26,10 +26,22 @@ The current version of OpenTrack outputs impact counts and magnitudes, jump coun
 
 ## Installation
 
-To run OpenTrack, you will need to 1) make a copy of this repository in your system's 'R' folder, and 2) download and install the package using:
+Right now, OpenTrack isn't the most simple thing to get up and running if you're not already an R user... I'm working on it, and will hopefully have a standalone platform available for non-R users before too long.
+
+To run OpenTrack, you will need to 1) make a copy of this repository in your system's 'R' folder, 2) install the dependencies, and 3) download and install the package using:
 
 ``` r
-install_github("joseph-shaw/OpenTrack")
+#install.packages("devtools")
+devtools::install_github("joseph-shaw/OpenTrack")
+```
+
+I'm pretty sure I should be able to just make all of the dependencies install automatically, but for now you'll have to install these manually I think:
+
+``` r
+devtools::install_version("shinydashboardPlus", version = "0.7.5", repos = "http://cran.us.r-project.org")
+devtools::install_github("cvarrichio/rowr")
+devtools::install_github("wleepang/shiny-directory-input")
+
 ```
 
 You will also need to alter several of the files within the settings folder ("~ R/OpenTrack/settings") before you get started.
@@ -45,29 +57,10 @@ You will also need to alter several of the files within the settings folder ("~ 
  - export.csv:         This file can be used to change the data that is exported. Simply delete a column to remove it from the export.
 
 
-
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+Once installed, you can run the app with:
 
 ```{r example}
-library(OpenTrack)
-## basic example code
+#library(OpenTrack)
+OpenTrack::run_app()
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
