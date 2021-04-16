@@ -1,0 +1,1340 @@
+# Load required packages ----
+library(shiny)
+library(shinydashboard)
+library(dashboardthemes)
+library(shinyWidgets)
+library(shinycssloaders)
+library(dygraphs)
+library(DescTools)
+library(zoo)
+library(caTools)
+library(png)
+library(shinydashboardPlus)
+library(xts)
+library(dplyr)
+library(gridExtra)
+library(ggiraphExtra)
+library(extrafont)
+library(ggplot2)
+library(ggiraph)
+library(rbtc)
+library(data.table)
+library(Cairo)
+library(fmsb)
+library(shinyFiles)
+library(pool)
+library(dplyr)
+library(odbc)
+library(DBI)
+library(DT)
+library(lubridate)
+library(chron)
+library(shinyDirectoryInput)
+library(shinyjs)
+library(rowr)
+library(plotly)
+library(tidyverse)
+
+
+# Add data processing function --------------------------------------------
+
+process_imu_data <- function(file, run.filter, bf, invert, time_unit){
+  
+  # Read data ---------------------------------------------------------------
+  time_unit
+  
+  df <- fread(file) %>% 
+    mutate(
+      time = ms / time_unit,
+      zacc = zacc * invert
+    )
+  
+  #### Interpolate time series to 100 Hz ####
+  max <- RoundTo(max(df$time, na.rm = TRUE), multiple = 1000, FUN = floor)  #df$V1
+  time <- seq(from = 6, to = max, by = 0.01)
+  
+  x.acc <-   as.numeric(unlist(approx(x = df$time, y = df$xacc,  xout = time, method = 'linear')[2], use.names=FALSE))
+  y.acc <-   as.numeric(unlist(approx(x = df$time, y = df$yacc,  xout = time, method = 'linear')[2], use.names=FALSE))
+  z.acc <-   as.numeric(unlist(approx(x = df$time, y = df$zacc,  xout = time, method = 'linear')[2], use.names=FALSE))
+  x.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$xgyro, xout = time, method = 'linear')[2], use.names=FALSE))
+  y.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$ygyro, xout = time, method = 'linear')[2], use.names=FALSE))
+  z.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$zgyro, xout = time, method = 'linear')[2], use.names=FALSE))
+  x.deg <-   as.numeric(unlist(approx(x = df$time, y = df$xdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  y.deg <-   as.numeric(unlist(approx(x = df$time, y = df$ydeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  z.deg <-   as.numeric(unlist(approx(x = df$time, y = df$zdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  x.com <-   as.numeric(unlist(approx(x = df$time, y = df$xcom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  y.com <-   as.numeric(unlist(approx(x = df$time, y = df$ycom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  z.com <-   as.numeric(unlist(approx(x = df$time, y = df$zcom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  
+  df <- data.frame(time, x.acc, y.acc, z.acc, x.a_vel, y.a_vel, z.a_vel, x.deg, y.deg, z.deg, x.com, y.com, z.com) %>% 
+    mutate(time = time - 5.99)
+  
+  # Filter data -------------------------------------------------------------
+  cor.cross <- function(x0, y0, i=0) {
+    if (i < 0) {x<-y0; y<-x0; i<- -i}
+    else {x<-x0; y<-y0}
+    n <- length(x)
+    cor(x[(i+1):n], y[1:(n-i)], use="pairwise.complete.obs")
+  }
+  
+  df <- df %>% 
+    mutate(x.raw = x.acc,
+           y.raw = y.acc,
+           z.raw = z.acc)
+  
+  
+  if(run.filter == TRUE){
+    
+    df <- df %>% 
+      mutate_at(2:6, signal::filter, filt = bf) %>% 
+      mutate_at(2:6, as.vector)
+    
+    time.range <- (-500):(500)
+    e <- df$z.raw[400:1400]
+    v <- df$z.acc[400:1400]
+    data.cor <- sapply(time.range, function(i) cor.cross(e, v, i))
+    i <- time.range[which.max(data.cor)]
+    
+    if(i > 0){ 
+      lead2 <- function(x, i){lead(x, i)}
+      df <- df %>% mutate_at(2:6, lead2, i = i)
+    }
+    
+    if(i < 0){ 
+      lag2 <- function(x, i){lead(x, sqrt(i^2))}
+      df <- df %>% mutate_at(2:6, lag2, i = i)
+    }
+  }
+  
+  
+  # Calculate acc / vel / dis -----------------------------------------------
+  
+  df <- df %>% 
+    mutate(
+      x.a_vel = x.a_vel * 180/pi,
+      y.a_vel = y.a_vel * 180/pi,
+      z.a_vel = z.a_vel * 180/pi,
+      x.vel = cumsum(x.acc * 0.01),
+      y.vel = cumsum(y.acc * 0.01),
+      z.vel = cumsum(z.acc * 0.01),
+      x.dis = cumsum(x.vel * 0.01),
+      y.dis = cumsum(y.vel * 0.01),
+      z.dis = cumsum(z.vel * 0.01),
+      x.rot = cumsum(x.a_vel * 0.01),
+      y.rot = cumsum(y.a_vel * 0.01),    
+      z.rot = cumsum(z.a_vel * 0.01),
+      x.a_acc = (x.a_vel - lag(x.a_vel, 1)) / 0.01,
+      y.a_acc = (y.a_vel - lag(y.a_vel, 1)) / 0.01,
+      z.a_acc = (z.a_vel - lag(z.a_vel, 1)) / 0.01,
+      res.acc = sqrt(x.acc^2 + y.acc^2 + z.acc^2),
+      angle = sqrt(z.deg^2 + y.deg^2)
+    )
+  
+  #### Create 'clean' time series for classification ####
+  # flatten values below 0.2
+  df$up.id <- ifelse(df$z.acc < 0.2 | df$z.raw < 0.2, 0, df$z.acc)
+  df2 <- df
+  df2[1,1] <- 10000
+  
+  # Iterate flight smoothing
+  while(min(df == df2, na.rm = TRUE) == 0){
+    df2 <- df
+    df$up.id  <- ifelse(runmin(df$up.id, 10 ,align = "left") == 0 & runmin(df$up.id, 10, align = "right") == 0 & df$up.id < 0.6, 0, df$up.id)
+    df$up.id <- ifelse(runmin(df$up.id, 5 ,align = "left") == 0 & runmin(df$up.id, 5 ,align = "right") == 0 & df$up.id < 1.5, 0, df$up.id)
+  }
+  
+  
+  # If up acc is 0, make resultant 0
+  df$resultant.id <- ifelse(df$up.id == 0, 0, sqrt(df$up.id ^2 + df$x.acc ^2 + df$y.acc ^2))
+  
+  #Identify peaks
+  df$peak <- ifelse(df$resultant.id == runmax(df$resultant.id, 55, align = "center") & 
+                      df$resultant.id >= 1.65, 1, 0)
+  
+  #Calculate the magnitude of the peak
+  df$peak.mag <- ifelse(df$peak == 1, df$resultant.id, 0)
+  df$peak.up.mag <- ifelse(df$peak == 1, df$z.acc, 0)
+  
+  df[is.na(df)] <- 0
+  
+  #Identify periods of flight
+  df$flight <- ifelse(df$up.id == 0, 1, 0)
+  
+  #Make row number helper column
+  df$row <- 1:nrow(df)
+  
+  #Identify onset and end of jump, and peaks
+  df$flight.s.f <- ifelse(df$flight == 1 & lag(df$flight, 1) == 0, 'A',
+                          ifelse(df$flight == 0 & lag(df$flight, 1) == 1, 'B',
+                                 ifelse(df$peak == 1 & df$peak.up.mag > 1.35, 'C','')))
+  
+  df$flight.s.f <- ifelse(lag(df$flight.s.f,1) == 'B' & lag(df$peak,1) == 1 & lag(df$peak.up.mag,1) > 1.35, 'C', df$flight.s.f)
+  
+  #Calculate duration of jump
+  as <- which(df$flight.s.f == "A")
+  bs <- which(df$flight.s.f == "B")
+  cs <- which(df$flight.s.f == "C")
+  
+  #time to jump landing
+  next_b <- base::sapply(as, function(a) {
+    diff <- bs-a
+    if(all(diff < 0)) return(NA)
+    bs[min(diff[diff > 0]) == diff]
+  })
+  
+  df$f.time <- NA
+  df$f.time[as] <- df$row[next_b]
+  df$f.time <- df$f.time - df$row
+  
+  #Calculate time to next peak
+  next_c <- base::sapply(as, function(a) {
+    diff <- cs-a
+    if(all(diff < 0)) return(NA)
+    cs[min(diff[diff > 0]) == diff]
+  })
+  df$ttp <- NA
+  df$ttp[as] <- df$row[next_c]
+  df$ttp <- df$ttp - df$row
+  
+  df$l.to.p <- ifelse(df$f.time > 0, df$ttp - df$f.time, 0)
+  
+  #calculate landing acceleration
+  next_c <- base::sapply(as, function(a) {
+    diff <- cs-a
+    if(all(diff < 0)) return(NA)
+    cs[min(diff[diff > 0]) == diff]
+  })
+  df$landing.acc <- NA
+  df$landing.acc[as] <- df$peak.mag[next_c]
+  
+  #Eliminate flight times beyond 80cs and below 15cs
+  df$f.time <- ifelse(df$f.time > 80, 0,
+                      ifelse(df$f.time < 15, 0, df$f.time))
+  
+  #Check if there's takeoff peak present
+  df$takeoff.peak <- ifelse(df$flight.s.f == 'A'
+                            & runmax(df$peak.mag, 40, align = "right", endrule = "NA") > 1.65
+                            & df$f.time > 1, 1, 0)
+  
+  #Is it a jump?
+  df$Jump <- ifelse(df$flight.s.f == 'A' &
+                      df$f.time > 22 &
+                      df$f.time < 80 &
+                      df$l.to.p < 38 &
+                      df$takeoff.peak == 1, 1, 0)  
+  
+  df <- df %>% 
+    mutate(
+      #If a jump is identified, calculate the height?
+      jh = ifelse(Jump == 1, 9.81 * (f.time/10)^2 / 8, NA),
+      jh = (0.9301*jh) - 0.9443,
+      
+      #Calculate PlayerLoad
+      PL = sqrt(
+        (lead(z.acc, 1) - z.acc) ^2 +
+          (lead(y.acc, 1) - y.acc) ^2 +
+          (lead(x.acc, 1) - x.acc) ^2),
+      PL = PL / 100,
+      #Calculate PL over a resting threshold
+      PL.active = ifelse(PL > 0.005, PL, 0),
+      #Calculate the vector MA
+      ma5.vector = runmean(res.acc, 5, endrule = "NA", align = "center"),
+      #Is the vector ma a peak?
+      ma.Peak = ifelse(ma5.vector == runmax(ma5.vector, 21, align = 'center') & ma5.vector >= 0, 1, 0),
+      #Calculate the magnitude of the peak
+      raw.peak.mag = ifelse(ma.Peak == 1, runmax(res.acc, 9, endrule = "NA"), 0),
+      #Calculate the zone of each accel
+      acc.zone = RoundTo(raw.peak.mag, multiple = 0.5, FUN = ceiling),
+      #Calculate the time in each accel zone
+      acc.zone.time = RoundTo(res.acc, multiple = 0.5, FUN = ceiling),
+      #Calculate active time
+      active.time = df$res.acc,
+      active.time = ifelse(runmax(active.time, 350, align = "right", endrule = "NA") < 1.2, 0, active.time),
+      active.time = ifelse(runmax(active.time, 1000, align = "right", endrule = "NA") < 1.5, 0, active.time)
+    )
+  
+  return(df)
+}
+
+
+
+# Create lists for drop down menus----
+Session_type_list <- c('Training', 'Warm-Up', 'Coaching', 'Match', 'Practice Match', 'Gym', 'Other')
+Ballet_List <- c('NA', 'Onegin', 'Corybantic Games', 'Live Fire Exercise', 'The Dante Project', 'Dances at a Gathering')
+
+# Create dashboard theme ----
+theme_light <- shinyDashboardThemeDIY(
+  ### general
+   appFontFamily = "Arial"
+  ,appFontColor = "#616161"
+  ,primaryFontColor = "rgb(0,0,0)"
+  ,infoFontColor = "rgb(0,0,0)"
+  ,successFontColor = "rgb(0,0,0)"
+  ,warningFontColor = "rgb(0,0,0)"
+  ,dangerFontColor = "rgb(0,0,0)"
+  ,bodyBackColor = "#F9FAFB"
+
+  ### header
+  ,logoBackColor =  "#252E3E"
+
+  ,headerButtonBackColor = "#252E3E"
+  ,headerButtonIconColor = "white"
+  ,headerButtonBackColorHover = "#538CC6"
+  ,headerButtonIconColorHover = "white"
+
+  ,headerBackColor = "#252E3E"
+  ,headerBoxShadowColor = "#CB2030"
+  ,headerBoxShadowSize = "0px 0px 0px"
+
+  ### sidebar
+  ,sidebarBackColor = "#F9FAFB"
+  ,sidebarPadding = 0
+
+  ,sidebarMenuBackColor = "#F9FAFB"
+  ,sidebarMenuPadding = 0
+  ,sidebarMenuBorderRadius = 0
+
+  ,sidebarShadowRadius = "0px 0px 0px"
+  ,sidebarShadowColor = "#aaaaaa"
+
+  ,sidebarUserTextColor = "#343D46"
+
+  ,sidebarSearchBackColor = "rgb(55,72,80)"
+  ,sidebarSearchIconColor = "rgb(153,153,153)"
+  ,sidebarSearchBorderColor = "#D8DEE9"
+
+  ,sidebarTabTextColor = "#343D46"
+  ,sidebarTabTextSize = 15
+  ,sidebarTabBorderStyle = "none none none none"
+  ,sidebarTabBorderColor = "#D8DEE9"
+  ,sidebarTabBorderWidth = 100
+
+  ,sidebarTabBackColorSelected = "#D8DEE9"
+  ,sidebarTabTextColorSelected = "rgb(0,0,0)"
+  ,sidebarTabRadiusSelected = "0px 0px 0px 0px"
+
+  ,sidebarTabBackColorHover = "#D8DEE9"
+  ,sidebarTabTextColorHover = "rgb(50,50,50)"
+  ,sidebarTabBorderStyleHover = "none solid solid solid"
+  ,sidebarTabBorderColorHover = "transparent"
+  ,sidebarTabBorderWidthHover = 1
+  ,sidebarTabRadiusHover = "0px 0px 0px 0px"
+
+  ### boxes
+  ,boxBackColor = "rgb(255,255,255)"
+  ,boxBorderRadius = 1
+  ,boxShadowSize = "0px 0px 0px"
+  ,boxShadowColor = "transparent"
+  ,boxTitleSize = 16
+  ,boxDefaultColor =  "white" #  "rgb(210,214,220)"
+  ,boxPrimaryColor = "rgba(44,222,235,1)"
+  ,boxInfoColor = "rgb(210,214,220)"
+  ,boxSuccessColor = "#6699CC"
+  ,boxWarningColor = "rgb(244,156,104)"
+  ,boxDangerColor = "rgb(255,88,55)"
+
+  ,tabBoxTabColor = "rgb(255,255,255)"
+  ,tabBoxTabTextSize = 14
+  ,tabBoxTabTextColor = "lightgrey"   #"rgb(0,0,0)"
+  ,tabBoxTabTextColorSelected = "#6699CC"
+  ,tabBoxBackColor = "rgb(255,255,255)"
+  ,tabBoxHighlightColor = "rgb(248,248,248)"   #"#6699CC"
+  ,tabBoxBorderRadius = 0
+
+  ### inputs
+  ,buttonBackColor = "rgb(245,245,245)"
+  ,buttonTextColor = "rgb(0,0,0)"
+  ,buttonBorderColor = "rgb(200,200,200)"
+  ,buttonBorderRadius = 5
+
+  ,buttonBackColorHover = "rgb(235,235,235)"
+  ,buttonTextColorHover = "rgb(100,100,100)"
+  ,buttonBorderColorHover = "rgb(200,200,200)"
+
+  ,textboxBackColor = "rgb(255,255,255)"
+  ,textboxBorderColor = "rgb(200,200,200)"
+  ,textboxBorderRadius = 5
+  ,textboxBackColorSelect = "rgb(245,245,245)"
+  ,textboxBorderColorSelect = "rgb(200,200,200)"
+
+  ### tables
+  ,tableBackColor = "rgb(255,255,255)"
+  ,tableBorderColor = "rgb(240,240,240)"
+  ,tableBorderTopSize = 1
+  ,tableBorderRowSize = 1
+
+)
+
+#Create the header logo
+logo_blue <- shinyDashboardLogoDIY(
+  mainText = "Dashboard"
+  ,boldText = "Training Load"
+  ,textSize = 16
+  ,badgeText = ""
+  ,badgeTextColor = "white"
+  ,badgeTextSize = 0
+  ,badgeBackColor = "white"
+  ,badgeBorderRadius = 0
+)
+
+
+
+# Start of UI -------------------------------------------------------------
+
+ui <-  dashboardPagePlus(
+          useShinyjs(),
+
+#   - Header -------------------------------------------------------------
+          
+          header = dashboardHeaderPlus(
+            #Add logos
+            title = tagList(
+              #img(class = "logo-mini", src = "https://i.ibb.co/fQCMtCZ/logo-short-wt.png", height = "50px", width = "52.5px", align = "centre"), 
+              img(class = "logo-mini", src = "logo-short-wt.png", height = "50px", width = "52.5px", align = "centre"), 
+              img(class = "logo-lg", src = "https://i.ibb.co/HC4D2Cc/logo-long-wt.png", height = "50px", width = "230px", align = "left")),
+            enable_rightsidebar = TRUE,
+            rightSidebarIcon = "cog"
+          ),
+          
+
+#   - Left Sidebar --------------------------------------------------------
+
+          sidebar = dashboardSidebar(
+            width = 300,
+            uiOutput('style_tag'),
+            
+          # Sidebar menu
+            sidebarMenu(
+              id = "sidebar",
+              menuItem("Upload Data", tabName = "UploadData2", icon = icon("file-upload")),
+              menuItem("Analyse Data", tabName = "Dashboard", icon = icon("chart-area")),
+              menuItem("Dashboard", tabName = "Dashboard2", icon = icon("chart-bar")),              
+              menuItem("SQL Database", tabName = "SQLDatabase", icon = icon("database"))
+              #menuItem("Database", tabName = "Database", icon = icon("th")),
+              #menuItem("Daily Report", tabName = "DailyReport", icon = icon("chart-line"))
+            )
+          ),
+
+#   - Right Sidebar -----------------------------------------------------------
+
+        rightsidebar =  rightSidebar(
+          width = 250,
+          rightSidebarTabContent(
+            id = 1,
+            icon = "desktop",
+            active = TRUE,
+            title = "Upload Raw Data"
+
+          ),
+          rightSidebarTabContent(
+            id = 2,
+            title = "Filter Settings",
+            radioButtons("filtertype", "Select filter type:", choices = c("Butterworth", "Moving Average"), selected = "Butterworth"),
+            numericInput("cutofffreq", "Cutoff frequency/window size", min = 1, max = 100, step = 1, value = 12)
+          ),
+          rightSidebarTabContent(
+            id = 3,
+            icon = "paint-brush",
+            title = "About",
+            numericInput("obs", "Observations:", 10, min = 1, max = 100)
+          )
+         ),
+
+          
+          
+          
+
+#   - Dashboard Body ----------------------------------------------------------
+
+    body = dashboardBody(
+            theme_light,
+#       ~ Tab 1 ---- "Upload Data"-------------
+            tabItems(
+              tabItem(
+                tabName = "UploadData2",
+                tags$h5("Upload the raw data:", style = "font-weight: bold;"),
+                shinyFilesButton('Central', label='Select Central File...', title='Please select a file', multiple=FALSE, style='font-size:100%'),
+                tags$span(style="display:inline-block; width: 10px;"),
+                shinyFilesButton('Left', label='Select Left File...', title='Please select a file', multiple=FALSE, style='padding-right:23px; padding-left:23px; font-size:100%'),
+                tags$span(style="display:inline-block; width: 10px;"),
+                shinyFilesButton('Right', label='Select Right File...', title='Please select a file', multiple=FALSE, style='padding-right:18px; padding-left:18px; font-size:100%'),
+                tags$br(),
+                textOutput("filepath1"), 
+                textOutput(outputId = "res_defaultValue"),
+                
+                
+                #tags$br(),
+                textOutput("filepath2"), 
+                #tags$br(),
+                textOutput("filepath3"), 
+                #tableOutput("summarydata1"),
+                tags$br(),    
+                airDatepickerInput("starttime",
+                                   timepicker = TRUE,
+                                   label = "What time were the units turned on?:",
+                                   placeholder = NULL,
+                                   multiple = FALSE,
+                                   clearButton = TRUE,
+                                   
+                                   value = as.POSIXct(paste(Sys.Date(),'10:00', sep = " ")),
+                                   width = 300
+                ),
+                selectInput("timeunit", "What are the input units of time?:", choices = c("s", "1 / 10", "1 / 100", "ms"), selected = "ms"),
+                radioButtons("invertup", "Swap up/down:", choiceNames = c("No", "Yes"), choiceValues = c(1, -1), selected = 1),
+                tags$hr(), 
+                actionButton("processraw", "Process Data", width = 200, style='padding-top:0px; padding-bottom:0px; padding-left:10px; font-size:100%'),
+                actionButton("saveraw", "Save Raw Data", width = 200) 
+              ),
+#       ~ Tab 2 ---- "Dashboard"-------------   
+              tabItem(
+                tabName = "Dashboard",
+#           = Graph/summary box -----------------------
+                    fluidRow(
+                      tabBox(
+                         width = 12,
+#               > Graph tab ------------------------
+                        tabPanel(
+                              status = "primary",
+                              title = "Accelerometry Graph - Central",
+                              withSpinner(dygraphOutput("Graph1", height = 190), type = 3, color.background = "white")
+                         ),
+                        tabPanel(
+                          status = "secondary",
+                          title = "Accelerometry Graph - L/R",
+                          withSpinner(dygraphOutput("Graph2", height = 190), type = 3, color.background = "white")
+                        )
+                      )
+                    ), #End of fluid row
+#           = Create data entry boxes ----
+                fluidRow(
+                  tabBox(
+                    width = 12, height = 350,
+                    #               > Session info tab ------------------------
+                    tabPanel(
+                      status = "primary",
+                      title = "Session/Drill Data",
+                      column(3,
+                             h4("Enter Session Information"),
+                             selectInput('sessiontype',
+                                       'Session Type:',
+                                         selected = 'Rehearsal',
+                                         choices = Session_type_list
+                             ),
+                             # br(),
+                             textInput("nameoverride",
+                                       "Name Override:",
+                                       value = "0"
+                             ),
+                             textInput("durationoverride",
+                                       "Duration Override:",
+                                       value = "0"
+                             )
+                      ),
+                      column(4, offset = 1,
+                             br(),
+                             br(),
+                             textInput('balletname',
+                                       'Session Name:'
+                             ),
+                             splitLayout(
+                               numericInput(
+                                 inputId = "actnumber",
+                                 label = "Act:",
+                                 value = 1, step = 1
+                               ),
+                               br(),
+                               textInput('role',
+                                         'Role:'
+                               ), cellWidths = c(100,10, 185)
+                             ),
+                             textInput('section',
+                                       'Section:'
+                             )
+                      ),
+                      column(4, offset = 0,
+                             br(),
+                             br(),
+                             numericInput(
+                               inputId = "sessionnumber",
+                               label = "Session Number:",
+                               value = 1,
+                               step = 1
+                             ),
+                             
+                             # Create action buttons
+                             br(),
+                             actionButton("addsession1",
+                                          "Add Session to SQL DB",
+                                          width = 300
+                             ),
+                             br(),
+                             br(),
+                             br(),
+                             actionButton("saveproc",
+                                          "Save Processed Data",
+                                          width = 300
+                             )
+                      )
+                    ),
+                    tabPanel(
+                      title = "Change Athlete Information")
+                  )
+                )          
+              ),
+#       ~ Tab 3 ---- "Dashboard"-----------------------------------------------------------------------
+    tabItem(
+      tabName = "Dashboard2",
+       fluidRow(
+         valueBoxOutput("value_box.1", width = 2),
+         valueBoxOutput("value_box.2", width = 2),
+         valueBoxOutput("value_box.3", width = 2),
+         valueBoxOutput("value_box.4", width = 2),
+         valueBoxOutput("value_box.5", width = 2),
+         valueBoxOutput("value_box.6", width = 2)
+       ),
+      fluidRow(
+        column(6,plotlyOutput("dashboardplot1", width="600px",height="300px")),  
+        column(6,plotlyOutput("dashboardplot2", width="600px",height="300px"))
+
+      )
+    ),
+#       ~ Tab 4 ---- "SQLDatabase"-----------------------------------------------------------------------
+    tabItem(
+      tabName = "SQLDatabase",
+#           = SQL DataTable ----
+      fluidRow(
+        box(height = "auto", width = "auto",
+            h5("SQL Database"),
+            div(style="display: inline-block;padding:100; width: 1200px;overflow-x: scroll",
+                #tableOutput("summarydata12" #, height = 300
+                dataTableOutput("table", height = 300
+                )
+            )
+        )
+      ),
+#           = Display New Row ----
+      fluidRow(
+        box(h5("New Row"),
+            width = 12,
+            div(style="display: inline-block;padding:0; width: 1200px;overflow-x: scroll",
+                tableOutput("summarydata1") #
+            )
+        )
+      ),
+#           = SQL Buttons ----
+      fluidRow(
+        box(
+          h5("Update table:"),
+          width = 2,
+          actionButton("update",
+                       label = "Update",
+                       width = 150
+          )
+        ),
+        box(
+          h5("Session ID:"),
+          width = 2,
+          textInput("droprow", label = NULL, width = 150)
+        ),
+        box(
+          h5("Delete whole row:"),
+          width = 2,
+          actionButton("droprowbutton",
+                       "Delete row",
+                       width = 150
+          )
+        ),
+        box(
+          h5("Column reference:"),
+          width = 2,
+          textInput("columnref", label = NULL, width = 150)
+        ),
+        box(
+          h5("New data to input:"),
+          width = 2,
+          textInput("newinput", label = NULL, width = 150)
+        ),
+        box(
+          h5("Insert new data:"),
+          width = 2,
+          actionButton("SQLinputbutton",
+                       "Insert data",
+                       width = 150
+          )
+        )
+      )
+    )
+            )
+    )
+)
+# End of UI ----
+
+#Start of server----
+server <- function(input, output, session) {
+
+# Options -----
+  options(shiny.maxRequestSize = 70*1024^3,
+          browser = "C:/Program Files/Mozilla Firefox/firefox.exe",
+          shiny.usecairo=T)
+
+  #memory.limit(size = 8095)
+
+##Open right sidebar
+#  observe({
+#    if (input$sidebar == "uploaddata") {
+#      shinyjs::addClass(selector = "aside.control-sidebar", class = "control-sidebar-open")
+#    } else {
+#      shinyjs::removeClass(selector = "aside.control-sidebar", class = "control-sidebar-open")
+#    }
+#  })
+  
+  
+  # Load SQL Database ----
+  conn <- DBI::dbConnect(odbc::odbc(),
+                         Driver   = "SQL Server Native Client 11.0", #"SQL Server", # Native Client RDA 11.0",
+                         Server   = "DESKTOP-T4HJR8O",
+                         Database = "RB_TL",
+                         #Trusted_Connection = "True",
+                         UID      = "sa", # "shaw_joseph@outlook.com",
+                         PWD      = rstudioapi::askForPassword("Database password")
+                         #Port     = 1433
+  )
+#FSU@ DIC FH123! DM13 2HD? 321T%
+
+# Reactive value template ----  
+  db <- reactiveValues(
+    db = NULL
+  )
+  
+# Create SQL DataTable ----
+  output$table <- renderDataTable({ 
+    db$db
+  }, width = "auto", options = list(lengthMenu = list(c(3, 4, 5, 6, 10, -1), c('3', '4', '5', '6', '10', 'All'))))
+  
+# Update DT button ----  
+  observeEvent(input$update, {
+    data <- dbGetQuery(conn, "Select * from TL_Data;")
+    db$db <- data
+  })
+  
+# Add session button ----
+  observeEvent(input$addsession1, {
+    data$df <- data$df %>% 
+      mutate(
+        session.type = ifelse(row_number > Time()[1] & row_number < Time()[2], input$sessiontype, session.type),
+        session.name = ifelse(row_number > Time()[1] & row_number < Time()[2], input$balletname, session.name),
+        session.num = ifelse(row_number > Tsime()[1] & row_number < Time()[2], input$sessionnumber, session.num)
+      )
+    
+  })
+  
+# Drop row button ----
+  observeEvent(input$droprowbutton, {
+    dbSendStatement(conn, paste0("DELETE FROM  TL_Data WHERE session_id = ", input$droprow))
+  })
+  
+# Edit cell button ----
+  observeEvent(input$SQLinputbutton, {
+    dbSendStatement(conn, paste0("UPDATE TL_Data SET ", input$columnref, " = '", input$newinput, "' WHERE session_id = ", input$droprow)) 
+  })
+
+# File select ----  
+  shinyFileChoose(input, 'Central', root=c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"), filetypes='csv')
+  shinyFileChoose(input, 'Left', root=c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"), filetypes='csv')
+  shinyFileChoose(input, 'Right', root=c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"), filetypes='csv')
+  
+  
+#  # Output filepaths ----
+  output$filepath1 <- renderText({ 
+    if(is.na(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Central)$datapath[1])){NULL
+      }else(
+        paste("Central:",
+        parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Central)$datapath[1])
+      )
+  })
+  
+  output$filepath2 <- renderText({ 
+    if(is.na(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Left)$datapath[1])){NULL
+    }else(
+      paste("Left:",
+            parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Left)$datapath[1])
+    )
+  })
+  
+  output$filepath3 <- renderText({ 
+    if(is.na(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Right)$datapath[1])){NULL
+    }else(
+      paste("Right:",
+            parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/',  data = "d:/"),input$Right)$datapath[1])
+    )
+  })
+  
+
+
+# Value Boxes -------------------------------------------------------------
+
+  output$value_box.1 <- renderValueBox({
+    valueBox(sum(Window()$C.Jump, na.rm = TRUE), "Jumps", icon = icon("arrow-alt-circle-up"), width = 2, color = "fuchsia")
+  })
+  output$value_box.2 <- renderValueBox({
+    valueBox(summary()$s_jumps, "Small Jumps", icon = icon("angle-up"), width = 2, color = "olive")
+  })
+  output$value_box.3 <- renderValueBox({
+    valueBox(summary()$m_jumps, "Medium Jumps", icon = icon("angle-double-up"), width = 2, color = "orange")
+  })
+  output$value_box.4 <- renderValueBox({
+    valueBox(summary()$l_jumps, "Large Jumps", icon = icon("fighter-jet"), width = 2, color = "red")
+  })
+  output$value_box.5 <- renderValueBox({
+    valueBox(paste0(round(summary()$active_dur), " min"), "Active Time", icon = icon("clock"), width = 2, color = "purple")
+  })
+  output$value_box.6 <- renderValueBox({
+    valueBox(paste(round(Time()[3]/100/60), " min"), "Duration", icon = icon("clock"), width = 2, color = "teal")
+  })
+#  output$value_box.7 <- renderValueBox({
+#    valueBox(sum(Window()$Jump, na.rm = TRUE), "Jumps", icon = icon("arrow-alt-circle-up"), width = 2, color = "fuchsia")
+#  })
+#  output$value_box.8 <- renderValueBox({
+#    valueBox(summary()$s.jumps, "Small Jumps", icon = icon("angle-up"), width = 2, color = "olive")
+#  })
+#  output$value_box.9 <- renderValueBox({
+#    valueBox(summary()$m.jumps, "Medium Jumps", icon = icon("angle-double-up"), width = 2, color = "orange")
+#  })
+#  output$value_box.10 <- renderValueBox({
+#    valueBox(summary()$l.jumps, "Large Jumps", icon = icon("fighter-jet"), width = 2, color = "red")
+#  })
+#  output$value_box.11 <- renderValueBox({
+#    valueBox(paste(round(sum(Window()$JumpHeight, na.rm = TRUE)/100), "m"), "Height Jumped", icon = icon("ruler"), width = 2, color = "purple")
+#  })
+#  output$value_box.12 <- renderValueBox({
+#    valueBox(paste(round(Time()[3]/100/60), " min"), "Duration", icon = icon("stopwatch"), width = 2, color = "teal")
+#  })
+#
+
+
+# Main Data Processing ----------------------------------------------------
+
+  data <- reactiveValues(df = NULL)
+  
+    #Load raw file and add to create DF
+    
+    observeEvent(input$processraw, {
+      
+    file.list <-  c(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Central)$datapath[1],
+                    parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Left)$datapath[1],
+                    parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Right)$datapath[1]
+    ) 
+      
+    # Filter settings ---------------------------------------------------------
+    
+    run.filter <- TRUE
+    data.freq <- 100
+    order <- 4
+    filt.freq <- 10
+    
+    nyquist.freq <- data.freq / 2
+    bf <- signal::butter(order, filt.freq / nyquist.freq, type="low")
+    
+    
+    if(input$timeunit == "ms"){time_unit <- 1000}  
+    if(input$timeunit == "s / 100"){time_unit <- 100}  
+    if(input$timeunit == "s / 10"){time_unit <- 10}  
+    if(input$timeunit == "s"){time_unit <- 1}  
+    
+    invert <- as.numeric(input$invertup) #Add a variable to flip up and down
+    
+    # loop through central, left, and right files
+    for(i in 1:3){
+      
+      if(is.na(file.list[i])){DF <- data.table::fread("frame.csv") %>% mutate(time = time/1000)}else{
+              DF <- process_imu_data(file = file.list[i], run.filter = run.filter, bf = bf, invert = invert, time_unit = time_unit)  
+      }
+
+      #Rename cols
+      if(i == 1){names(DF)[2:ncol(DF)] <- paste0("C.", names(DF)[2:ncol(DF)])}
+      if(i == 2){names(DF)[2:ncol(DF)] <- paste0("L.", names(DF)[2:ncol(DF)])}      
+      if(i == 3){names(DF)[2:ncol(DF)] <- paste0("R.", names(DF)[2:ncol(DF)])}
+      
+      #bind DFs 
+      if(i == 1){combined.DF <- DF}else{combined.DF <- cbind.fill(combined.DF, DF[,2:ncol(DF)], fill = 0)}
+    
+     }
+
+    DF <- combined.DF %>% 
+      mutate(
+        Time = seq(from = 1, to = nrow(combined.DF)/100, by = 0.01)[1:nrow(combined.DF)],
+        sec.group = ceiling(Time),
+        min.group = ceiling(Time/60),
+        session.type = NA,
+        session.name = NA,
+        session.num = NA,
+        athlete.name = details()[1,2],
+        C.res.acc = as.numeric(C.res.acc),
+        R.res.acc = as.numeric(R.res.acc),
+        L.res.acc = as.numeric(L.res.acc),
+        row_number = as.numeric(row.names(combined.DF))
+      ) %>% 
+      select(
+        row_number, athlete.name, session.type, session.name, session.num, time, 
+        C.res.acc, C.peak.mag, C.f.time, C.Jump, C.jh, C.PL, C.acc.zone, C.acc.zone.time, C.ma.Peak, C.raw.peak.mag, C.active.time,
+        L.res.acc, L.peak.mag, L.f.time, L.Jump, L.jh, L.PL, L.acc.zone, L.acc.zone.time, L.ma.Peak, L.raw.peak.mag, L.active.time,
+        R.res.acc, R.peak.mag, R.f.time, R.Jump, R.jh, R.PL, R.acc.zone, R.acc.zone.time, R.ma.Peak, R.raw.peak.mag, R.active.time
+        )
+    
+    
+    data$df <- DF
+
+  })
+
+
+# Session Report Data -----------------------------------------------------
+
+  report.data <- reactive({
+    data$df %>% 
+      group_by(min.group) %>% 
+      summarise(
+        timestamp = as.POSIXct(as.POSIXct(input$starttime)+60*min.group[1]),
+        
+        athlete.name = athlete.name[1],
+        session.type = session.type[1],
+        session.name = session.name[1],
+        session.num = session.num[1],
+        impact_load = sum(C.peak.mag, na.rm = T),
+        impacts.2g = length(which(C.peak.mag >= 1.5 & C.peak.mag < 2.5)),
+        impacts.3g = length(which(C.peak.mag >= 2.5 & C.peak.mag < 3.5)),
+        impacts.4g = length(which(C.peak.mag >= 3.5 & C.peak.mag < 4.5)),
+        impacts.5g = length(which(C.peak.mag >= 4.5 & C.peak.mag < 5.5)),
+        impacts.6g = length(which(C.peak.mag >= 5.5 & C.peak.mag < 6.5)),
+        impacts.7g = length(which(C.peak.mag >= 6.5 & C.peak.mag < 7.5)),
+        impacts.8g = length(which(C.peak.mag >= 7.5 & C.peak.mag < 8.5)),
+        impacts.9g = length(which(C.peak.mag >= 8.5 & C.peak.mag < 9.5)),
+        impacts.10g = length(which(C.peak.mag >= 9.5 & C.peak.mag < 10.5)),
+        impacts.11g = length(which(C.peak.mag >= 10.5 & C.peak.mag < 11.5)),
+        jump.sum = sum(C.Jump, na.rm = T),
+        jumps.band.1 = sum(C.J.6_10),
+        jumps.band.2 = sum(C.J.10_15, C.J.15_20),
+        jumps.band.3 = sum(C.J.20_25, C.J.25_30),
+        jumps.band.4 = sum(C.J.30_35, C.J.35_40),
+        jumps.band.5 = sum(C.J.40_45, C.J.45_50),
+        jumps.band.6 = sum(C.J.50_55, C.J.55_60),
+        jumps.band.7 = sum(C.J.60_65, C.J.65_70),
+        jumps.band.8 = sum(C.J.70_75, C.J.75_80)
+        
+        
+      ) %>% 
+      mutate(
+        timestamp = format(as.POSIXct(timestamp, origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        hour = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "hours"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        day = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "days"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        month = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "months"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S")
+      )
+    
+  })
+  
+
+# Report Data -------------------------------------------------------------
+
+  report.data <- reactive({
+    data$df %>% 
+      group_by(min.group) %>% 
+      summarise(
+        timestamp = as.POSIXct(as.POSIXct(input$starttime)+60*min.group[1]),
+        
+        athlete.name = athlete.name[1],
+        session.type = session.type[1],
+        session.name = session.name[1],
+        session.num = session.num[1],
+        impact_load = sum(C.peak.mag, na.rm = T),
+        impacts.2g = length(which(C.peak.mag >= 1.5 & C.peak.mag < 2.5)),
+        impacts.3g = length(which(C.peak.mag >= 2.5 & C.peak.mag < 3.5)),
+        impacts.4g = length(which(C.peak.mag >= 3.5 & C.peak.mag < 4.5)),
+        impacts.5g = length(which(C.peak.mag >= 4.5 & C.peak.mag < 5.5)),
+        impacts.6g = length(which(C.peak.mag >= 5.5 & C.peak.mag < 6.5)),
+        impacts.7g = length(which(C.peak.mag >= 6.5 & C.peak.mag < 7.5)),
+        impacts.8g = length(which(C.peak.mag >= 7.5 & C.peak.mag < 8.5)),
+        impacts.9g = length(which(C.peak.mag >= 8.5 & C.peak.mag < 9.5)),
+        impacts.10g = length(which(C.peak.mag >= 9.5 & C.peak.mag < 10.5)),
+        impacts.11g = length(which(C.peak.mag >= 10.5 & C.peak.mag < 11.5)),
+        R.impacts.2g = length(which(R.peak.mag >= 1.5 & R.peak.mag < 2.5)),
+        R.impacts.3g = length(which(R.peak.mag >= 2.5 & R.peak.mag < 3.5)),
+        R.impacts.4g = length(which(R.peak.mag >= 3.5 & R.peak.mag < 4.5)),
+        R.impacts.5g = length(which(R.peak.mag >= 4.5 & R.peak.mag < 5.5)),
+        R.impacts.6g = length(which(R.peak.mag >= 5.5 & R.peak.mag < 6.5)),
+        R.impacts.7g = length(which(R.peak.mag >= 6.5 & R.peak.mag < 7.5)),
+        R.impacts.8g = length(which(R.peak.mag >= 7.5 & R.peak.mag < 8.5)),
+        R.impacts.9g = length(which(R.peak.mag >= 8.5 & R.peak.mag < 9.5)),
+        R.impacts.10g = length(which(R.peak.mag >= 9.5 & R.peak.mag < 10.5)),
+        R.impacts.11g = length(which(R.peak.mag >= 10.5 & R.peak.mag < 11.5)),
+        L.impacts.2g = length(which(L.peak.mag >= 1.5 & L.peak.mag < 2.5)),
+        L.impacts.3g = length(which(L.peak.mag >= 2.5 & L.peak.mag < 3.5)),
+        L.impacts.4g = length(which(L.peak.mag >= 3.5 & L.peak.mag < 4.5)),
+        L.impacts.5g = length(which(L.peak.mag >= 4.5 & L.peak.mag < 5.5)),
+        L.impacts.6g = length(which(L.peak.mag >= 5.5 & L.peak.mag < 6.5)),
+        L.impacts.7g = length(which(L.peak.mag >= 6.5 & L.peak.mag < 7.5)),
+        L.impacts.8g = length(which(L.peak.mag >= 7.5 & L.peak.mag < 8.5)),
+        L.impacts.9g = length(which(L.peak.mag >= 8.5 & L.peak.mag < 9.5)),
+        L.impacts.10g = length(which(L.peak.mag >= 9.5 & L.peak.mag < 10.5)),
+        L.impacts.11g = length(which(L.peak.mag >= 10.5 & L.peak.mag < 11.5)),
+
+        jump.sum = sum(C.Jump, na.rm = T),
+
+        
+      ) %>% 
+      mutate(
+        timestamp = format(as.POSIXct(timestamp, origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        hour = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "hours"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        day = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "days"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S"),
+        month = format(as.POSIXct(floor_date(as.POSIXct(timestamp), unit = "months"), origin = "1970-01-01"), "%Y-%m-%d %H:%M:%S")
+      )
+    
+  })
+  
+  
+
+# Dashboard Plots ---------------------------------------------------------
+
+  output$dashboardplot1 <- renderPlotly({
+    test <- Window()
+
+    df <- data.frame(
+      acc.zone = c(test$C.acc.zone, test$R.acc.zone, test$L.acc.zone),
+      raw.peak.mag = c(test$C.raw.peak.mag, test$R.raw.peak.mag, test$L.raw.peak.mag),
+      ma.peak = c(test$C.ma.Peak, test$R.ma.Peak, test$L.ma.Peak),
+      location = c(rep("c", nrow(test)), rep("r", nrow(test)), rep("l", nrow(test)))
+    ) %>% 
+      mutate_at(1:3, as.numeric) %>% 
+      filter(ma.peak == 1 & acc.zone > 1.8) %>% 
+      group_by(location, acc.zone) %>% 
+      summarise(sum = length(raw.peak.mag)) %>% 
+       # sum = sum(raw.peak.mag)) %>% 
+      pivot_wider(id_cols = acc.zone, names_from = "location", values_from = sum )
+    
+
+    file.list <-  c(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Central)$datapath[1],
+                    parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Left)$datapath[1],
+                    parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Right)$datapath[1]
+    ) 
+    if(!is.na(file.list[2])){
+    
+    plotly::plot_ly(df, x = ~acc.zone, y = ~r, type = 'bar', name = 'Right', marker = list(color = 'rgb(99, 203, 228)')) %>%
+      plotly::add_trace(y = ~-l, name = 'Left', marker = list(color = 'rgb(234, 104, 109)')) %>% 
+      plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+      plotly::layout(plot_bgcolor='transparent') %>% 
+      plotly::layout(paper_bgcolor='transparent')
+        
+    }else{
+    plotly::plot_ly(df, x = ~acc.zone, y = ~c, type = 'bar', name = 'Right', marker = list(color = 'rgb(234, 104, 109)')) %>%
+      plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+        plotly::layout(plot_bgcolor='transparent') %>% 
+        plotly::layout(paper_bgcolor='transparent')
+    }
+    
+    
+  })
+  
+  output$dashboardplot2 <- renderPlotly({
+    df <- Window() 
+    now_lt <- as.POSIXlt(Sys.time(), tz = "GMT")
+    tm <- df$time
+    x <- now_lt + tm
+    
+    ay1 <- list(
+      side = "left",
+      title = "",
+      zeroline = FALSE,
+      showline = FALSE,
+      showticklabels = FALSE,
+      showgrid = FALSE
+    )
+    ay <- list(
+      tickfont = list(color = "blue"),
+      overlaying = "y",
+      side = "right",
+      title = "",
+      zeroline = FALSE,
+      showline = FALSE,
+      showticklabels = FALSE,
+      showgrid = FALSE
+    )
+    ax <- list(
+      title = "",
+      zeroline = FALSE,
+      showline = FALSE,
+      showticklabels = FALSE,
+      showgrid = FALSE
+    )
+    
+    if(length(x) < 50000){
+    
+      plot_ly(x = ~x) %>% 
+        plotly::add_trace(y = ~cumsum(df$C.PL), mode = 'lines', type = "scatter", yaxis = "y2", name = "PlayerLoad", line = list(color = '#4BC076')) %>% 
+        plotly::add_trace(x = ~x, y = ~df$C.res.acc[1:length(tm)], type = "scatter", mode = "lines", name = "Acceleration", line = list(color = '#4157c1')) %>% 
+        plotly::add_bars(y = ~df$C.Jump[1:length(tm)]*5, name = "Jumps", marker = list(color = 'rgb(234, 104, 109)')) %>% 
+        #plotly::add_trace(x = ~x, y = ~cumsum(df[df$C.raw.peak.mag > 1.5,]$C.raw.peak.mag[1:length(tm)])/100, mode = "lines", type = "scatter", yaxis = "y2", name = "Impact Load / 100") %>% 
+        plotly::layout(yaxis2 = ay, xaxis = ax, yaxis = ay1) %>% 
+        plotly::layout(legend = list(orientation = 'h')) %>% 
+        plotly::layout(plot_bgcolor='transparent') %>% 
+        plotly::layout(paper_bgcolor='transparent')
+    
+    }else{
+      
+      
+      plot_ly(df[df$C.Jump == 1,], x = ~time) %>% 
+        plotly::add_trace(data = df[seq(1, nrow(df), 20),], y = ~C.res.acc, type =  "scatter", mode = "lines", name = "Acceleration (20 Hz)", line = list(color = '#4157c1')) %>% 
+        plotly::add_bars(data = df[df$C.Jump == 1,], y = ~C.Jump*4, name = "Jumps", line = list(color = 'rgb(234, 104, 109)')) %>% 
+        plotly::layout(yaxis2 = ay, xaxis = ax, yaxis = ay1) %>% 
+        plotly::layout(legend = list(orientation = 'h')) %>% 
+        plotly::layout(plot_bgcolor='transparent') %>% 
+        plotly::layout(paper_bgcolor='transparent')  
+      
+      
+      
+    }
+    
+    
+ #   file.list <-  c(parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Central)$datapath[1],
+ #                   parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Left)$datapath[1],
+ #                   parseFilePaths(roots = c(documents = "C:/Users/shaw_/Documents/", SD_Card = 'e:/', data = "d:/"),input$Right)$datapath[1]
+ #   ) 
+ #   if(!is.na(file.list[2])){
+ #     
+ #     plotly::plot_ly(df, x = ~acc.zone, y = ~r, type = 'bar', name = 'Right') %>%
+ #       plotly::add_trace(y = ~-l, name = 'Left') %>% 
+ #       plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+ #       plotly::layout(plot_bgcolor='transparent') %>% 
+ #       plotly::layout(paper_bgcolor='transparent')
+ #     
+ #   }else{
+ #     plotly::plot_ly(df, x = ~acc.zone, y = ~c, type = 'bar', name = 'Right') %>%
+ #       plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+ #       plotly::layout(plot_bgcolor='transparent') %>% 
+ #       plotly::layout(paper_bgcolor='transparent')
+ #   }
+ #   
+    
+  })
+  
+  
+  
+
+# Window Data Processing --------------------------------------------------
+  
+# Start/End/Duration Calculation ----
+  Time <- reactive({
+    Date <- substr(input$starttime, 1, 10)
+    Session.Start.ref <- substr(input$Graph1_date_window[1], 12, 19)
+    Session.End.ref <-   substr(input$Graph1_date_window[2], 12, 19)
+    Unit.Start.ref  <- strptime(input$starttime, "%Y-%m-%d %H:%M:%OS")
+
+    Unit.Start    <- strptime(paste(Unit.Start.ref, sep = ''), "%Y-%m-%d %H:%M:%OS")
+    Session.Start <- strptime(paste(Date, Session.Start.ref, sep = ''), "%Y-%m-%d %H:%M:%OS")
+    Session.End   <- strptime(paste(Date, Session.End.ref, sep = ''), "%Y-%m-%d %H:%M:%OS")
+
+    Start <-     sqrt(((as.numeric(difftime(Unit.Start, Session.Start, units ='secs')))*100) ^ 2)
+    Duration <-  sqrt(((as.numeric(difftime(Session.Start, Session.End, units ='secs')))*100) ^ 2)
+    End <- Start + Duration
+    c(Start,End,Duration)
+    #c(Session.Start.ref, Session.End.ref, Unit.Start.ref)
+  })
+
+# Subset Data ----
+  Window <- reactive({
+    start <- Time()[1]
+    end <- Time()[2]
+    subset(data$df, row_number >= start & row_number <= end)
+  })
+# Create new row data ----
+  summary1 <- eventReactive(input$filename.go, {
+    head(file())
+  })
+
+# Read details from SD ----
+  details <- reactive({
+    details <- read.csv("C:/Users/shaw_/Documents/Details.csv", header = FALSE, encoding = "UTF-8", stringsAsFactors = FALSE)                   #"E:/Details.csv", header = FALSE, encoding = "UTF-8", stringsAsFactors = FALSE)
+    #details <- read.csv("E:/Details.csv", header = FALSE, encoding = "UTF-8", stringsAsFactors = FALSE)                   #"E:/Details.csv", header = FALSE, encoding = "UTF-8", stringsAsFactors = FALSE)
+    #class(details[,2]) = "character"
+    details[1,2] <- ifelse(input$nameoverride == "0", details[1,2], input$nameoverride)
+    details
+  })
+
+  
+  
+  # Summary Data ------------------------------------------------------------
+  
+  summary <- reactive({
+    data.frame(
+      dancer_name = details()[1,2],
+      session_date = paste(substr(input$starttime, 1, 4), substr(input$starttime, 6, 7), substr(input$starttime, 9, 10), sep = '/'),
+      season = "2019/20",
+      is_dummy = NA,
+      session_num = input$sessionnumber,
+      session_type = input$sessiontype,
+      ballet = input$balletname,
+      act = input$actnumber,
+      section = input$section,
+      role_name = input$role,
+      teacher = NA,
+      starttime = substr(input$Graph1_date_window[1], 12, 19),
+      endtime = substr(input$Graph1_date_window[2], 12, 19),
+      r_starttime = input$Graph1_date_window[1],
+      r_endtime = input$Graph1_date_window[2],
+      #ballet = input$balletname,
+      total_dur = round(Time()[3] / 60 / 100, 0),
+      #dur_override = input$durationoverride,
+      active_dur = length(which(Window()$C.active.time != 0))/100/60,
+      #rpe = input$rpe,
+      #srpe = ifelse(input$durationoverride == "0", (round(Time()[3] / 60 / 100, 0))*input$rpe, as.numeric(input$durationoverride) * input$rpe),
+      #pointe_rpe = input$pointerpe,
+      #pointe_srpe = ifelse(input$durationoverride == "0", (round(Time()[3] / 60 / 100, 0))*input$pointerpe, as.numeric(input$durationoverride) * input$pointerpe),
+      total_pl = sum(Window()$C.PL, na.rm = TRUE),
+      active_pl = sum(Window()$C.PL.active, na.rm = TRUE),
+      DSL = sum(subset(Window(), C.peak.mag >2)$C.peak.mag, na.rm = TRUE),
+      Jumps = sum(Window()$C.Jump, na.rm = TRUE),
+      Jumps_6_10 = sum(Window()$J.6_10, na.rm = TRUE),
+      Jumps_10_15 = sum(Window()$J.10_15, na.rm = TRUE),
+      Jumps_15_20 = sum(Window()$J.15_20, na.rm = TRUE),
+      Jumps_20_25 = sum(Window()$J.20_25, na.rm = TRUE),
+      Jumps_25_30 = sum(Window()$J.25_30, na.rm = TRUE),
+      Jumps_30_35 = sum(Window()$J.30_35, na.rm = TRUE),
+      Jumps_35_40 = sum(Window()$J.35_40, na.rm = TRUE),
+      Jumps_40_45 = sum(Window()$J.40_45, na.rm = TRUE) ,
+      Jumps_45_50 = sum(Window()$J.45_50, na.rm = TRUE),
+      Jumps_50_55 = sum(Window()$J.50_55, na.rm = TRUE),
+      Jumps_55_60 = sum(Window()$J.55_60, na.rm = TRUE),
+      Jumps_60_65 = sum(Window()$J.60_65, na.rm = TRUE),
+      Jumps_65_70 = sum(Window()$J.65_70, na.rm = TRUE),
+      Jumps_70_75 = sum(Window()$J.70_75, na.rm = TRUE),
+      Jumps_75_80 = sum(Window()$J.75_80, na.rm = TRUE),
+      s_jumps = length(which(Window()$C.f.time < 40.3 & Window()$C.f.time > 22 & Window()$C.Jump == 1)),
+      m_jumps = length(which(Window()$C.f.time > 40.3 & Window()$C.f.time < 57.1 & Window()$C.Jump == 1)),
+      l_jumps = length(which(Window()$C.f.time > 57.1 & Window()$C.f.time < 80.7 & Window()$C.Jump == 1)),
+      count_1_5 = length(which(Window()$C.acc.zone == 1.5)),
+      count_2_0 = length(which(Window()$C.acc.zone == 2.0)),
+      count_2_5 = length(which(Window()$C.acc.zone == 2.5)),
+      count_3_0 = length(which(Window()$C.acc.zone == 3.0)),
+      count_3_5 = length(which(Window()$C.acc.zone == 3.5)),
+      count_4_0 = length(which(Window()$C.acc.zone == 4.0)),
+      count_4_5 = length(which(Window()$C.acc.zone == 4.5)),
+      count_5_0 = length(which(Window()$C.acc.zone == 5.0)),
+      count_5_5 = length(which(Window()$C.acc.zone == 5.5)),
+      count_6_0 = length(which(Window()$C.acc.zone == 6.0)),
+      count_6_5 = length(which(Window()$C.acc.zone == 6.5)),
+      count_7_0 = length(which(Window()$C.acc.zone == 7.0)),
+      count_7_5 = length(which(Window()$C.acc.zone == 7.5)),
+      count_8_0 = length(which(Window()$C.acc.zone == 8.0)),
+      count_8_5 = length(which(Window()$C.acc.zone == 8.5)),
+      count_9_0 = length(which(Window()$C.acc.zone == 9.0)),
+      count_9_5 = length(which(Window()$C.acc.zone == 9.5)),
+      count_10_0 = length(which(Window()$C.acc.zone > 9.5))
+    )
+  })
+
+# ??? Render the summary data ----
+  output$summarydata1 <- renderTable({
+    summary()
+    })
+
+  output$summarydata2 <- renderTable({ #remove this?
+    data$df[1:2000,]
+  })
+  
+  
+
+# Create Dygraph Time Series ----------------------------------------------
+
+  # Central Plot
+  time.series <-  reactive({
+    df1 <- data$df
+    df1 <- df1[seq(from = 1, to = nrow(df1), by = 50),] %>% 
+      select(C.res.acc, L.res.acc, R.res.acc)
+    x <- nrow(df1)
+    TimeSeries <- seq(from = 0.00, to = (x*0.5), by = 0.5)
+   #TimeSeries <- seq(from = 0.00, to = (x*0.01), by = 0.01)
+    TimeSeries <- as.POSIXct(TimeSeries, tz = "GMT", strptime(input$starttime, "%Y-%m-%d %H:%M:%OS"))
+    xts(df1, order.by = TimeSeries[1:x])
+  })
+  
+  # L and R plot
+  time.series2 <-  reactive({
+    df1 <- Window()
+    df1 <- df1[seq(from = 1, to = nrow(df1), by = 50),] %>% 
+      select(C.res.acc, C.PL, C.DSL, C.Jump)
+    x <- nrow(df1)
+    TimeSeries <- seq(from = 0.00, to = (x*0.5), by = 0.5)
+    #TimeSeries <- seq(from = 0.00, to = (x*0.01), by = 0.01)
+    TimeSeries <- as.POSIXct(TimeSeries, tz = "GMT", strptime(input$starttime, "%Y-%m-%d %H:%M:%OS"))
+    xts(df1, order.by = TimeSeries[1:x])
+  })
+  
+
+
+# Dygraphs ----------------------------------------------------------------
+
+    output$Graph1 <- renderDygraph(
+    dygraph(time.series(), group = 'Group1') %>%
+      dySeries('C.res.acc', axis = 'y', color = '#4157c1', strokeWidth = 1.5) %>%
+      dySeries('L.res.acc', axis = 'y', color = 'transparent', strokeWidth = 0) %>% 
+      dySeries('R.res.acc', axis = 'y', color = 'transparent', strokeWidth = 0) %>%
+      dyOptions(useDataTimezone = TRUE, gridLineWidth = 0.09) %>%
+      dyAxis("y", label = "Acceleration (g)", drawGrid = FALSE) %>%
+      dyLegend(show = "never", hideOnMouseOut = TRUE)
+  )
+
+  output$Graph2 <- renderDygraph(
+    dygraph(time.series(), group = 'Group1') %>% # changed this group
+      dySeries('L.res.acc', axis = 'y', color = '#4157c1', strokeWidth = 1.5) %>% 
+      dySeries('R.res.acc', axis = 'y', color = 'red', strokeWidth = 1.5) %>%
+      dySeries('C.res.acc', axis = 'y', color = 'transparent', strokeWidth = 0) %>%
+      dyOptions(useDataTimezone = TRUE, gridLineWidth = 0.09) %>%
+      dyAxis("y", label = "Acceleration (g)", drawGrid = FALSE) %>%
+      dyLegend(show = "never", hideOnMouseOut = TRUE)
+  )
+  
+  
+  
+# Save processed data locally ----
+  observeEvent(input$saveproc, {
+    Session.Start <- paste(substr(input$Graph1_date_window[1], 12, 13), ".", substr(input$Graph1_date_window[1], 15, 16), sep = "")
+    Session.End <-   paste(substr(input$Graph1_date_window[2], 12, 13), ".", substr(input$Graph1_date_window[2], 15, 16), sep = "")
+
+    filename <- paste(details()[1,2], substr(input$starttime, 1, 10), input$sessionnumber, Session.Start, "-", Session.End, input$sessiontype, "Ballet -", input$balletname, "Act -", input$actnumber, "Role -", input$role, ".rds", sep = " ")
+
+    if (!file.exists(file.path("D:", "PhD Data", "Processed Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7))))
+    {dir.create(path =  file.path("D:", "PhD Data", "Processed Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7)))     }
+
+    if (!file.exists(file.path("D:", "PhD Data", "Processed Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10))))
+    {dir.create(path =  file.path("D:", "PhD Data", "Processed Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10)))     }
+
+    path <- file.path("D:", "PhD Data", "Processed Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10), filename)
+
+    saveRDS(
+      object = Window(),
+      file = path,
+      compress = FALSE
+    )
+    
+})
+
+
+# Copy raw data ----
+  observeEvent(input$saveraw, {
+###    name <- paste(details()[1,2], substr(input$starttime, 1, 13), ".", substr(input$starttime, 15, 16), "Raw.csv")
+###    path <- file.path("D:", "PhD Data", "Raw Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10))
+###
+###    if (!file.exists(file.path("D:", "PhD Data", "Raw Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7))))
+###      {dir.create(path =  file.path("D:", "PhD Data", "Raw Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7)))     }
+###
+###    if (!file.exists(file.path("D:", "PhD Data", "Raw Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10))))
+###    {dir.create(path =  file.path("D:", "PhD Data", "Raw Data", details()[1,2], "2019-20", substr(input$starttime, 6, 7), substr(input$starttime, 9, 10)))     }
+###
+###    #file.copy(parseFilePaths(roots = c(SD_Card = 'e:/', documents = "C:/Users/shaw_/Documents/"), input$files)$datapath[1], path)
+###    file.rename(from = parseFilePaths(roots = c(SD_Card = 'e:/', documents = "C:/Users/shaw_/Documents/"), input$files)$datapath[1], to = file.path(path, name))
+  
+    write.csv(report.data(), "exampledata.csv")
+    })
+
+} # End of server ----
+
+# Run the application ----
+shinyApp(ui = ui, server = server)
+

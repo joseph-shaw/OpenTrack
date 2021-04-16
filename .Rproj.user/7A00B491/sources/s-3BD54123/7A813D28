@@ -1,0 +1,26 @@
+{
+    "id": "7A813D28",
+    "path": "~/R/OpenTrack/R/app_server.R",
+    "project_path": "R/app_server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1616158188451.0,
+    "source_on_save": false,
+    "relative_order": 10,
+    "properties": {
+        "cursorPosition": "213,4",
+        "scrollLine": "0",
+        "docOutlineVisible": "1",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1618135917,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1618135917812,
+    "read_only": false,
+    "read_only_alternatives": []
+}
