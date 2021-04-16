@@ -27,16 +27,18 @@ OpenTrack is tricky to install, probably because I haven’t built the
 package properly. If you know how to make it so all the dependencies
 install automatically, feel free to contact me and tell me how…
 
-To run OpenTrack, you will need to 1) make a copy of this repository in
-your system’s ‘R’ folder 2) install the dependencies 3) download and
-install the package
+To run OpenTrack, you will need to: 1) make a copy of this repository in
+your system’s ‘R’ folder, 2) install the dependencies, 3) download and
+install the package.
 
-1.  make a copy of this repository in your system’s ‘R’ folder Click the
+1.  Make a copy of this repository in your system’s ‘R’ folder Click the
     green button at the top of this page, download a zip. Once it’s
     downloaded, right click and extract all to your system’s R folder,
     normally in C:/Users/yourname\_/Documents/R
 
-2.  install the dependencies Click ctrl + shift + B. This won’t work,
+Open the OpenTrack project from this folder
+
+2.  Install the dependencies Click ctrl + shift + B. This won’t work,
     but it seems the easiest way to install RTools.
 
 Once it’s done, run this code:
@@ -49,13 +51,16 @@ devtools::install_github("wleepang/shiny-directory-input")
 install.packages("tidyverse")
 ```
 
-3.  download and install the package Once they’ve installed, run this
+3.  Download and install the package Once they’ve installed, run this
     code:
 
 ``` r
 #install.packages("devtools")
 devtools::install_github("joseph-shaw/OpenTrack")
 ```
+
+If it asks you to update packages just skip it. If you update
+shinydashboardPlus to 2.0.0 it won’t work.
 
 Alternatively, at this point you can just build the package yourself.
 
