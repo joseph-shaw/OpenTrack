@@ -24,10 +24,15 @@ the platform.
 
 ## Installation
 
+These instructions assume you have R and Rstudio installed. If you
+don’t, install them from here: R - <https://cran.r-project.org/>;
+Rstudio - <https://www.rstudio.com/products/rstudio/download/#download>.
+
 OpenTrack is tricky to install at the moment, probably because I haven’t
 built the package properly. If you know how to make it so all the
 dependencies install automatically, feel free to contact me and tell me
-how…
+how… Equally, if you’re just struggling to install it, please feel free
+to contact me.
 
 To run OpenTrack, you will need to: 1) make a copy of this repository in
 your system’s ‘R’ folder, 2) install the dependencies, 3) download and
@@ -44,10 +49,10 @@ C:/Users/yourname\_/Documents/R/OpenTrack (or OpenTrack-main)
 Open the OpenTrack project from this folder.
 
 2.  The next step is to install the dependencies:  
-    Press ctrl + shift + B. This won’t install fully, but it seems the
-    easiest way to install RTools.
+    Press ctrl + shift + B. This won’t install OpenTrack fully, but it
+    seems the simplest way to install RTools.
 
-Once it’s done, run this code line-by-line:
+Once it’s done, run this code line-by-line in the console:
 
 ``` r
 install.packages("tidyverse")
@@ -67,7 +72,7 @@ devtools::install_github("joseph-shaw/OpenTrack")
 ```
 
 If it asks you to update packages just skip it. If you update
-shinydashboardPlus to 2.0.0 it won’t work.
+shinydashboardPlus to 2.0.0 the app won’t work.
 
 Alternatively, at this point you can just build and install the package
 yourself.
