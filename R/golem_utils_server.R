@@ -85,11 +85,30 @@ use.sql <- function(){
 process_imu_data <- function(file, run.filter, bf, invert, time_unit){
   
   # Read data ---------------------------------------------------------------
-  df <- fread(file) %>% 
+  df <- fread(file)
+  
+  # Pad if no gyro data
+  if(ncol(df) == 4){
+    df$xgyro <- 0
+    df$ygyro <- 0
+    df$zgyro <- 0
+  }
+  
+  # rename columns,  alter time variable, flip z
+  df <- df %>% 
+    rename(
+      time = 1,
+      xacc = 2,
+      yacc = 3,
+      zacc = 4,
+      xgyro = 5,
+      ygyro = 6,
+      zgyro = 7
+      ) %>% 
     mutate(
-      time = ms / time_unit,
+      time = time / time_unit,
       zacc = zacc * invert
-    )
+    ) 
   
   #### Interpolate time series to 100 Hz ####
   max <- RoundTo(max(df$time, na.rm = TRUE), multiple = 1, FUN = floor)  #df$V1
@@ -101,14 +120,14 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
   x.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$xgyro, xout = time, method = 'linear')[2], use.names=FALSE))
   y.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$ygyro, xout = time, method = 'linear')[2], use.names=FALSE))
   z.a_vel <- as.numeric(unlist(approx(x = df$time, y = df$zgyro, xout = time, method = 'linear')[2], use.names=FALSE))
-  x.deg <-   as.numeric(unlist(approx(x = df$time, y = df$xdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
-  y.deg <-   as.numeric(unlist(approx(x = df$time, y = df$ydeg,  xout = time, method = 'linear')[2], use.names=FALSE))
-  z.deg <-   as.numeric(unlist(approx(x = df$time, y = df$zdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
-  x.com <-   as.numeric(unlist(approx(x = df$time, y = df$xcom,  xout = time, method = 'linear')[2], use.names=FALSE))
-  y.com <-   as.numeric(unlist(approx(x = df$time, y = df$ycom,  xout = time, method = 'linear')[2], use.names=FALSE))
-  z.com <-   as.numeric(unlist(approx(x = df$time, y = df$zcom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #x.deg <-   as.numeric(unlist(approx(x = df$time, y = df$xdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #y.deg <-   as.numeric(unlist(approx(x = df$time, y = df$ydeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #z.deg <-   as.numeric(unlist(approx(x = df$time, y = df$zdeg,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #x.com <-   as.numeric(unlist(approx(x = df$time, y = df$xcom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #y.com <-   as.numeric(unlist(approx(x = df$time, y = df$ycom,  xout = time, method = 'linear')[2], use.names=FALSE))
+  #z.com <-   as.numeric(unlist(approx(x = df$time, y = df$zcom,  xout = time, method = 'linear')[2], use.names=FALSE))
   
-  df <- data.frame(time, x.acc, y.acc, z.acc, x.a_vel, y.a_vel, z.a_vel, x.deg, y.deg, z.deg, x.com, y.com, z.com) %>% 
+  df <- data.frame(time, x.acc, y.acc, z.acc, x.a_vel, y.a_vel, z.a_vel) %>%  #, x.deg, y.deg, z.deg, x.com, y.com, z.com) %>% 
     mutate(time = time - 5.99)
   
   # Filter data -------------------------------------------------------------
@@ -117,7 +136,7 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
     else {x<-x0; y<-y0}
     n <- length(x)
     cor(x[(i+1):n], y[1:(n-i)], use="pairwise.complete.obs")
-  }
+  } # cross correlation planned for synchronisation
   
   df <- df %>% 
     mutate(x.raw = x.acc,
@@ -128,8 +147,8 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
   if(run.filter == TRUE){
     
     df <- df %>% 
-      mutate_at(2:6, signal::filtfilt, filt = bf) %>% 
-      mutate_at(2:6, as.vector)
+      mutate_at(2:7, signal::filtfilt, filt = bf) %>% 
+      mutate_at(2:7, as.vector)
   }
   
   # Calculate acc / vel / dis -----------------------------------------------
@@ -145,14 +164,14 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
       x.dis = cumsum(x.vel * 0.01),
       y.dis = cumsum(y.vel * 0.01),
       z.dis = cumsum(z.vel * 0.01),
-      x.rot = cumsum(x.a_vel * 0.01),
-      y.rot = cumsum(y.a_vel * 0.01),    
-      z.rot = cumsum(z.a_vel * 0.01),
+      #x.rot = cumsum(x.a_vel * 0.01),
+      #y.rot = cumsum(y.a_vel * 0.01),    
+      #z.rot = cumsum(z.a_vel * 0.01),
       x.a_acc = (x.a_vel - lag(x.a_vel, 1)) / 0.01,
       y.a_acc = (y.a_vel - lag(y.a_vel, 1)) / 0.01,
       z.a_acc = (z.a_vel - lag(z.a_vel, 1)) / 0.01,
       res.acc = sqrt(x.acc^2 + y.acc^2 + z.acc^2),
-      angle = sqrt(z.deg^2 + y.deg^2)
+      #angle = sqrt(z.com^2 + y.com^2)
     )
   
   #### Create 'clean' time series for classification ####
@@ -291,6 +310,6 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
       active.time = ifelse(runmax(active.time, 1000, align = "right", endrule = "NA") < 1.5, 0, active.time)
     )
   
-  #write.csv(df, "dataproc.csv", row.names = F)
+  #write.csv(df, "dataproc.csv", row.names = F) # for testing output
   return(df)
 }

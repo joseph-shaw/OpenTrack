@@ -1,6 +1,6 @@
-"athlete_name","sex","dob","email_address"
-"Athlete 1","m","01/10/1998","example@gmail.com"
-"Athlete 2","m","06/10/1996","athlete@yahoo.co.uk"
-"Athlete 3","f","15/12/1993","player3@outlook.com"
-"","","",""
-"Na","m","2021-04-11","d"
+athlete_name,sex,dob,email_address
+Athlete 1,m,01/10/1998,example@gmail.com
+Athlete 2,m,06/10/1996,athlete@yahoo.co.uk
+Athlete 3,f,15/12/1993,player3@outlook.com
+,,,
+,,,

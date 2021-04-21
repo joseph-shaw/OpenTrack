@@ -597,13 +597,13 @@ app_server <- function( input, output, session ) {
       
       plotly::plot_ly(df, x = ~acc.zone, y = ~r, type = 'bar', name = 'Right', marker = list(color = 'rgb(99, 203, 228)')) %>%
         plotly::add_trace(y = ~-l, name = 'Left', marker = list(color = 'rgb(234, 104, 109)')) %>% 
-        plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+        plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone (g)'), barmode = 'relative') %>% 
         plotly::layout(plot_bgcolor='transparent') %>% 
         plotly::layout(paper_bgcolor='transparent')
       
     }else{
       plotly::plot_ly(df, x = ~acc.zone, y = ~c, type = 'bar', name = 'Right', marker = list(color = 'rgb(234, 104, 109)')) %>%
-        plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone'), barmode = 'relative') %>% 
+        plotly::layout(yaxis = list(title = 'Count'), xaxis = list(title = 'Acceleration Zone (g)'), barmode = 'relative') %>% 
         plotly::layout(plot_bgcolor='transparent') %>% 
         plotly::layout(paper_bgcolor='transparent')
     }
