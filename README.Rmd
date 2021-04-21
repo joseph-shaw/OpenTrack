@@ -104,10 +104,11 @@ A couple of things to note here:
 - The time unit is currently 'time since turned on', and not a date-time unit. I'll probably look to add this in if there's demand for it
 
 The data you're uploading has to be in a specific format, 4 or 7 named columns (names don't matter) providing:  
-1. The time since the device was turned on
-2:4. X, Y, and Z acceleration (i.e., accelerometer data)
-5:7 (optional). X, Y, and Z angular acceleration (i.e., gyroscope data)
-You can see that in the files called 'example_upload.csv' or 'example_upload_acc_only.csv' in this repo.
+1. The time since the device was turned on  
+2:4. X, Y, and Z linear acceleration (i.e., accelerometer data) - Z should be up/down  
+5:7 (optional). X, Y, and Z angular acceleration (i.e., gyroscope data)  
+
+You can examples in the files called 'example_upload.csv' or 'example_upload_acc_only.csv' in this repo.
 
 Once you've uploaded the data and changed your settings, hit the 'Process' button and move to the 'Analyse Data' tab. After it loads you'll find plots of the central device (plot tab 1) and L/R devices (plot tab 2). You'll also find data inputs for details about the session, or space to add a new athlete to the database.
 
