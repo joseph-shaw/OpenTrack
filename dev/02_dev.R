@@ -87,6 +87,8 @@ golem::add_module( name = "dashboard_page" ) # Name of the module
 golem::add_module( name = "database_page" ) # Name of the module
 golem::add_module( name = "sql_buttons" ) # Name of the module
 golem::add_module( name = "filepaths" ) # Name of the module
+golem::add_module( name = "longitudinal_page" ) # Name of the module
+
 
 
 

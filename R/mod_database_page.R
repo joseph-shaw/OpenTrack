@@ -16,7 +16,7 @@ mod_database_page_ui <- function(id){
       tabName = "Database",
       #     Database DataTable 
       fluidRow(
-        box(height = "auto", width = "auto",
+        box(height = "auto", width = 12,
             h5("Database"),
             div(style="display: inline-block;padding:0; width: 1200px;overflow-x: scroll",
                 #tableOutput("summarydata12" #, height = 300
@@ -27,7 +27,7 @@ mod_database_page_ui <- function(id){
       ),
       #     New Row 
       fluidRow(
-        box(height = "auto", width = "auto",
+        box(height = "auto", width = 12,
             h5("New Row"),
             #width = 12,
             div(style="display: inline-block;padding:0; width: 1200px;overflow-x: scroll",
