@@ -1,0 +1,26 @@
+{
+    "id": "0196AC2F",
+    "path": "~/R/OpenTrack/R/mod_session_dashboard.R",
+    "project_path": "R/mod_session_dashboard.R",
+    "type": "r_source",
+    "hash": "3286803422",
+    "contents": "",
+    "dirty": false,
+    "created": 1619356453134.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "70,31",
+        "scrollLine": "56"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1619363785,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1619363785285,
+    "read_only": false,
+    "read_only_alternatives": []
+}
