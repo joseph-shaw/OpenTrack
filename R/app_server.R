@@ -76,8 +76,8 @@ app_server <- function( input, output, session ) {
       db$db <- plyr::rbind.fill(db$db, new.row) %>% 
         filter(!is.na(session_id))
       write.csv(db$db, "database.csv", row.names = F)
-      folder <- paste0("clipped-sessions/", input$select_athlete)
-      filename <- paste0(folder, "/", paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv"))
+      folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
+      filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
       dir.create(folder, showWarnings = FALSE)
       write.csv(
         raw_data,
@@ -113,8 +113,8 @@ app_server <- function( input, output, session ) {
       db$db <- plyr::rbind.fill(db$db, new.row) %>% 
         filter(!is.na(session_id))
       write.csv(db$db, "database.csv", row.names = F)
-      folder <- paste0("clipped-sessions/", input$select_athlete)
-      filename <- paste0(folder, "/", paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 12, 16)), ".csv"))
+      folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
+      filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
       dir.create(folder, showWarnings = FALSE)
       write.csv(
         raw_data,
