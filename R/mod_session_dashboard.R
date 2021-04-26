@@ -41,8 +41,8 @@ mod_session_dashboard_ui <- function(id){
           background = "yellow", width = 2, height = 102,
           actionButton("updatesession", "Update Session")
           
-        ),
-        textOutput("test")
+        )#,
+       # textOutput("test") # for troubleshooting
       ),
       
       fluidRow(

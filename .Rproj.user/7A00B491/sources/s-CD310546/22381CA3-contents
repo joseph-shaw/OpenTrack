@@ -42,8 +42,8 @@ mod_squad_dashboard_ui <- function(id){
       ),
       fluidRow(
         box(
-          title = "Squad Training Load", footer = "The table may take a few seconds to load with large squads",
-          width = 12, height = "auto",  background = "yellow", collapsible = TRUE, collapsed = T,
+          title = "Squad Training Load", footer = "The table may take a few seconds to load with large squads and/or date ranges",
+          width = 12, height = "auto",  background = "yellow", collapsible = FALSE, collapsed = T,
           div(style="display: inline-block;padding:0; width: 1150px;overflow-x: scroll",
           withSpinner( formattable::formattableOutput("squadtable") )
           )
