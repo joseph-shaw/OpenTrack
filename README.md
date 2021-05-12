@@ -41,7 +41,7 @@ install the package.
 1.  Make a copy of this repository in your system’s ‘R’ folder:  
     Click the green button at the top of this page, download a zip. Once
     it’s downloaded, right click and extract all to your system’s R
-    folder, normally in C:/Users/yourname\_/Documents/R
+    folder, normally in C:/Users/yourname_/Documents/R
 
 At this point you should have this repository in the folder:
 C:/Users/yourname\_/Documents/R/OpenTrack (or OpenTrack-main)
@@ -57,8 +57,8 @@ Once it’s done, run this code line-by-line in the console:
 ``` r
 install.packages("tidyverse")
 #install.packages("devtools")
-devtools::install_github("cvarrichio/rowr")
-devtools::install_github("wleepang/shiny-directory-input")
+### devtools::install_github("cvarrichio/rowr") 
+### devtools::install_github("wleepang/shiny-directory-input") ### Check if this is needed?
 devtools::install_version("shinydashboardPlus", version = "0.7.5", repos = "http://cran.us.r-project.org")
 ```
 

@@ -1,0 +1,25 @@
+{
+    "id": "793241D1",
+    "path": "~/R/OpenTrack/dev/02_dev.R",
+    "project_path": "dev/02_dev.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1620811292449.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "cursorPosition": "79,0",
+        "scrollLine": "0",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1620811304,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1620811304936,
+    "read_only": false,
+    "read_only_alternatives": []
+}
