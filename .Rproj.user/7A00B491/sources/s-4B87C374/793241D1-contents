@@ -15,13 +15,11 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
-usethis::use_package( "shinydashboardPlus" )
-usethis::use_package( "dplyr" )
-usethis::use_package( "Cairo" )
-usethis::use_package( "DBI" )
-usethis::use_package( "DescTools" )
-
-
+usethis::use_package("shinydashboardPlus" )
+usethis::use_package("dplyr" )
+usethis::use_package("Cairo" )
+usethis::use_package("DBI" )
+usethis::use_package("DescTools" )
 usethis::use_package("DT")
 usethis::use_package("caTools")
 usethis::use_package("chron")
@@ -37,12 +35,9 @@ usethis::use_package("ggplot2")
 usethis::use_package("gridExtra")
 usethis::use_package("lubridate")
 usethis::use_package("odbc")
-usethis::use_package("packrat")
-
 usethis::use_package("plotly")
 usethis::use_package("png")
 usethis::use_package("pool")
-#usethis::use_package("rbtc")
 usethis::use_package("rowr")
 usethis::use_package("shiny")
 usethis::use_package("shinyDirectoryInput")
@@ -61,26 +56,8 @@ usethis::use_package("zoo")
 usethis::use_package("config")
 usethis::use_package("golem")
 usethis::use_package("htmltools")
-usethis::use_package("fresh")
-
 usethis::use_package("formattable")
-#importFrom(htmltools,HTML)
-#importFrom(htmltools,tagAppendAttribu
-#importFrom(htmltools,tagList)
-#importFrom(htmltools,tags)
-#importFrom(shiny,NS)
-#importFrom(shiny,column)
-#importFrom(shiny,shinyApp)
-#importFrom(shiny,tagList)
-#
-
-
-
-
 usethis::use_dev_package("rowr")
-usethis::use_dev_package("shiny-directory-input")
-
-
 
 
 ## Add modules ----
@@ -98,10 +75,6 @@ golem::add_module( name = "splash_module" ) # Name of the module
 golem::add_module( name = "session_dashboard" ) # Name of the module
 
 
-
-
-
-
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
 golem::add_fct( "helpers" ) 
@@ -116,8 +89,6 @@ golem::add_css_file( "custom" )
 ## Add internal datasets ----
 ## If you have data in your package
 usethis::use_data_raw( name = "my_dataset", open = FALSE ) 
-
-
 
 
 ## Tests ----
