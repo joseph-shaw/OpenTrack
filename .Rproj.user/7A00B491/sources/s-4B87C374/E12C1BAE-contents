@@ -32,7 +32,6 @@ Imports:
     png,
     pool,
     rowr (>= 1.1.3),
-    shinyDirectoryInput,
     shinyFiles,
     shinyWidgets,
     shinycssloaders,
