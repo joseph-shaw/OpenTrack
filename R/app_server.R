@@ -3,7 +3,6 @@
 #' @param input,output,session Internal parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @import tidyverse
 #' @import tidyr
 #' @import DT
 #' @noRd
@@ -74,7 +73,7 @@ app_server <- function( input, output, session ) {
       new.row <- summary()
       #new.row$session_id <- max(as.numeric(db$db$session_id), na.rm = T) +1
       db$db <- plyr::rbind.fill(db$db, new.row) %>% 
-        filter(!is.na(session_id))
+        dplyr::filter(!is.na(session_id))
       write.csv(db$db, "database.csv", row.names = F)
       folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
       filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
@@ -111,7 +110,7 @@ app_server <- function( input, output, session ) {
       new.row <- summary()
       #new.row$session_id <- max(as.numeric(db$db$session_id), na.rm = T) +1
       db$db <- plyr::rbind.fill(db$db, new.row) %>% 
-        filter(!is.na(session_id))
+        dplyr::filter(!is.na(session_id))
       write.csv(db$db, "database.csv", row.names = F)
       folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
       filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
@@ -129,7 +128,7 @@ app_server <- function( input, output, session ) {
       db$db <- dbGetQuery(conn, "Select * from training_load;")
     }else{
       db$db <- db$db %>% 
-        filter(session_id != input$rowref)
+        dplyr::filter(session_id != input$rowref)
       write.csv(db$db, "database.csv", row.names = F)
     }
   })
@@ -628,7 +627,7 @@ app_server <- function( input, output, session ) {
       location = c(rep("c", nrow(test)), rep("r", nrow(test)), rep("l", nrow(test)))
     ) %>% 
       mutate_at(1:3, as.numeric) %>% 
-      filter(ma.peak == 1 & acc.zone > 1.8) %>% 
+      dplyr::filter(ma.peak == 1 & acc.zone > 1.8) %>% 
       group_by(location, acc.zone) %>% 
       summarise(sum = length(raw.peak.mag)) %>% 
       # sum = sum(raw.peak.mag)) %>% 
@@ -720,7 +719,7 @@ app_server <- function( input, output, session ) {
   # ~ Plot 1 -------------------------------------------------------------
   output$longplot1 <- renderPlotly({
   data <- as.data.frame(db$db) %>% 
-    filter(
+    dplyr::filter(
       athlete_name == input$select_athlete2,
       as.Date(session_date, format = "%d/%m/%Y") >= input$date_range[1],
       as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
@@ -831,7 +830,7 @@ app_server <- function( input, output, session ) {
   # ~ Plot 2 -------------------------------------------------------------
   output$longplot2 <- renderPlotly({
     data <- as.data.frame(db$db) %>% 
-      filter(
+      dplyr::filter(
         athlete_name == input$select_athlete2,
         as.Date(session_date, format = "%d/%m/%Y") >= input$date_range[1],
         as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
@@ -873,7 +872,7 @@ app_server <- function( input, output, session ) {
   # ~ Plot 3- R/L balance --------------------------------------------------------
   output$longplot3 <- renderPlotly({
     data <- as.data.frame(db$db) %>% 
-      filter(
+      dplyr::filter(
         athlete_name == input$select_athlete2,
         as.Date(session_date, format = "%d/%m/%Y") >= input$date_range[1],
         as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
@@ -965,7 +964,7 @@ app_server <- function( input, output, session ) {
   # ~ Table 0 - R/L balance --------------------------------------------------------
   output$longtable0 <- formattable::renderFormattable({
     data <- as.data.frame(db$db) %>% 
-      filter(
+      dplyr::filter(
         athlete_name == input$select_athlete2,
         as.Date(session_date, format = "%d/%m/%Y") >= input$date_range[1],
         as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
@@ -1016,7 +1015,7 @@ app_server <- function( input, output, session ) {
   # ~ Table 1 --------------------------------------------------------
   output$longtable1 <- formattable::renderFormattable({
     data <- as.data.frame(db$db) %>% 
-      filter(
+      dplyr::filter(
         athlete_name == input$select_athlete2,
         as.Date(session_date, format = "%d/%m/%Y") >= input$date_range[1],
         as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
@@ -1084,7 +1083,7 @@ app_server <- function( input, output, session ) {
   
   squaddata <- eventReactive(input$updatesquad, {
     data <- db$db %>% 
-      filter(
+      dplyr::filter(
         athlete_name %in% input$select_athlete3,
         as.Date(session_date, format = "%d/%m/%Y") >= input$date_range2[1],
         as.Date(session_date, format = "%d/%m/%Y") <= input$date_range2[2]
@@ -1239,7 +1238,7 @@ app_server <- function( input, output, session ) {
       location = c(rep("c", nrow(test)), rep("r", nrow(test)), rep("l", nrow(test)))
     ) %>% 
       mutate_at(1:3, as.numeric) %>% 
-      filter(ma.peak == 1 & acc.zone > 1.8) %>% 
+      dplyr::filter(ma.peak == 1 & acc.zone > 1.8) %>% 
       group_by(location, acc.zone) %>% 
       summarise(sum = length(raw.peak.mag)) %>% 
       # sum = sum(raw.peak.mag)) %>% 

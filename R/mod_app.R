@@ -18,7 +18,6 @@
 #' @import zoo
 #' @import caTools
 #' @import png
-#' @import shinydashboardPlus
 #' @import xts
 #' @import dplyr
 #' @import gridExtra
