@@ -5,13 +5,13 @@
     "type": "r_source",
     "hash": "0",
     "contents": "",
-    "dirty": false,
+    "dirty": true,
     "created": 1616158188451.0,
     "source_on_save": false,
     "relative_order": 2,
     "properties": {
-        "cursorPosition": "79,34",
-        "scrollLine": "69",
+        "cursorPosition": "12,26",
+        "scrollLine": "0",
         "docOutlineVisible": "1",
         "Source": "Source",
         "docOutlineSize": "195"
@@ -21,7 +21,7 @@
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1619563434900,
+    "last_content_update": 1620920588765,
     "read_only": false,
     "read_only_alternatives": []
 }
