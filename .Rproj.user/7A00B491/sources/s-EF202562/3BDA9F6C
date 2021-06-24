@@ -1,0 +1,26 @@
+{
+    "id": "3BDA9F6C",
+    "path": "~/R/OpenTrack/R/mod_upload_page.R",
+    "project_path": "R/mod_upload_page.R",
+    "type": "r_source",
+    "hash": "494844982",
+    "contents": "",
+    "dirty": false,
+    "created": 1624370256677.0,
+    "source_on_save": false,
+    "relative_order": 8,
+    "properties": {
+        "cursorPosition": "33,29",
+        "scrollLine": "17",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1624371544,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1624371544848,
+    "read_only": false,
+    "read_only_alternatives": []
+}

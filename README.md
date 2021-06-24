@@ -15,11 +15,19 @@ with triaxial accelerometer or 9-axis IMU data, and is functional with a
 single central device, and/or two devices corresponding to left and
 right limbs.
 
+OpenTrack is aimed at:  
+- Sports teams or dance companies who can’t afford commercial wearable
+systems but want to monitor load.  
+- Practitioners who want more control over the way in which their data
+is processed.  
+- Students or practitioners who want to learn to use wearable technology
+systems but don’t have access to commercial versions.
+
 The current version of OpenTrack calculates impact counts and
 magnitudes, jump counts and heights, PlayerLoad, and other common
 training load variables. It will also output both raw and processed
 time-series for each device uploaded. OpenTrack is designed to work with
-either a .csv or SQL databases, both of which can be edited from within
+either .csv or SQL databases, both of which can be edited from within
 the platform.
 
 ## Installation
@@ -29,12 +37,13 @@ don’t, install the latest versions from here: R -
 <https://cran.r-project.org/>; Rstudio -
 <https://www.rstudio.com/products/rstudio/download/#download>.
 
-To install OpenTrack, run the script below (or the ‘installation.R’ file
-included in this repo). This script will create a local copy of this
-repo, install Rtools, install the dependencies, and finally, install
-OpenTrack. Once OpenTrack is installed, open the ‘OpenTrack’ project
-file, and then run the command OpenTrack::run\_app to load the app.If
-you run into problems, please feel free to contact me.
+To install OpenTrack, run the script below in Rstudio (or the
+‘installation.R’ file included in this repo). This script will create a
+local copy of this repo, install Rtools, install the dependencies, and
+finally, install OpenTrack. Once OpenTrack is installed, open the
+‘OpenTrack’ project file, and then run the command OpenTrack::run\_app
+to load the app. If you run into problems, please feel free to contact
+me.
 
 Please note that OpenTrack requires version 0.7.5 of shinydashboardPlus.
 If you update shinydashboardPlus to 2.0.0 the app won’t work.
@@ -46,7 +55,7 @@ Before you begin you’ll need to alter several files within the
 OpenTrack won’t run properly. You’ll also need to decide whether you
 want to database using SQL or csv. If you want to use SQL then there’s a
 script to recreate the “Athlete\_Database” SQL database required in this
-repo (create\_sql.txt), which you can set up on your own server.
+repo (create\_sql), which you can set up on your own server.
 
 Here are the settings files you’ll need to edit.
 
@@ -70,8 +79,8 @@ Here are the settings files you’ll need to edit.
     where the app can look for files. Simply enter the required file
     paths and a name for the location you want to use. For example, to
     add your documents folder, add ‘Documents’ in the name column, and
-    “C:/Users/yourname\_” in the location column. You can set any number
-    of custom locations.
+    “C:/Users/yourname\_/Documents” in the location column. You can set
+    any number of custom locations.
 
 -   export.csv: This file can be used to change the data that is
     exported. Simply delete a column to remove it from the export.
@@ -91,12 +100,13 @@ Once you’ve configured these settings, you can run the app with:
 
 When you open the app you’ll start at the data upload page. Here you
 will need to upload the data from your IMU(s). There are upload tabs for
-central/left/right devices, and for up to 8 athletes. If you click these
-upload buttons and the file browser isn’t populating, you either haven’t
-set the filepaths in ‘filepaths.csv’ or you’re using SQL and you haven’t
-entered the password. Here you will also need to set the date/time the
-devices were turned on, the units of time that your device outputs, and
-if your vertical axis is flipped.
+central/left/right devices for a single athlete (multiple athletes
+coming soon). If you click these upload buttons and the file browser
+isn’t populating, you either haven’t set the filepaths in
+‘filepaths.csv’ or you’re using SQL and you haven’t entered the
+password. Here you will also need to set the date/time the devices were
+turned on, the units of time that your device outputs, and if your
+vertical axis is flipped.
 
 A couple of things to note here: - There’s not currently a function to
 sync the three devices, so if the times are out of sync, the data will
@@ -147,6 +157,10 @@ the sidebar to download a csv of the database, which can be found in the
 
 ### Longitudinal Dashboard
 
+For dashboards to populate they require data to be saved. The database
+files are empty on installation, but you can add the data from the file
+‘dummy\_database.csv’ if you want to see what they should look like.
+
 The Longitudinal Dashboard tab can be used to look at a single athlete’s
 training load data. Select the athlete you want using the dropdown, and
 the date range you’re interested in. You can then also choose if you
@@ -169,3 +183,13 @@ This tab will let you review specific sessions you’ve previously saved.
 Select the athlete and date, and then the sessions completed that day
 should populate. Click ‘Update Session’ and the dashboard from that
 session should update.
+
+## But I don’t have an accelerometer/IMU…
+
+I will try and put up some instructions for building your own at some
+point, but If I haven’t done that by the time you read this then feel
+free to contact me and I’ll point you in the right direction.
+
+## I’ve still got questions / It doesn’t work…
+
+Contact me via twitter (@josephshaw\_)
