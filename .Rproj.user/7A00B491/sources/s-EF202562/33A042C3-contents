@@ -1116,7 +1116,7 @@ app_server <- function( input, output, session ) {
       ) %>% 
       rename(
         Date = 1, Type = 2, Name = 3, Time = 4, Duration = 5, 
-        "Active Dur." = 6, "s-RPE" = 7, PlayerLoad = 8, "Impact Load" = 9,
+        "Active Dur." = 6, "sRPE" = 7, PlayerLoad = 8, "ImpactLoad" = 9,
         "Small Jumps" = 10, "Med. Jumps" = 11, "Large Jumps" = 12,
         "R Imp. Ld." = 13, "L Imp. Ld." = 14
       )
@@ -1128,16 +1128,21 @@ app_server <- function( input, output, session ) {
       data <- data %>% 
         group_by(Name, Date) %>% 
         summarise(
-          PlayerLoad = sum(PlayerLoad, na.rm = T)#,
-          #"s-RPE" = sum("s-RPE")
+          PlayerLoad = sum(PlayerLoad, na.rm = T),
+          sRPE = sum(sRPE, na.rm = T),
+          impactload = sum(ImpactLoad, na.rm = T)
         )
     }
     
+    if(input$select_squad_variable == 1){data$values <- data$PlayerLoad}
+    if(input$select_squad_variable == 2){data$values <- data$sRPE}
+    if(input$select_squad_variable == 3){data$values <- data$impactload}
+
     data <- data %>% 
       pivot_wider(
         id_cols = Name,
         names_from = Date,
-        values_from = PlayerLoad
+        values_from = values
       )
 
     formattable::formattable(data, 
