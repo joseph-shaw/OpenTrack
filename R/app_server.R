@@ -77,6 +77,7 @@ app_server <- function( input, output, session ) {
       write.csv(db$db, "database.csv", row.names = F)
       folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
       filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
+      dir.create(paste0("clipped-sessions/", input$select_athlete), showWarnings = FALSE)
       dir.create(folder, showWarnings = FALSE)
       write.csv(
         raw_data,
@@ -114,6 +115,7 @@ app_server <- function( input, output, session ) {
       write.csv(db$db, "database.csv", row.names = F)
       folder <- paste0("clipped-sessions/", input$select_athlete, "/", gsub(":", "-", substr(input$Graph1_date_window[1], 1, 10)))
       filename <- paste0(folder, "/", stringr::str_replace_all(paste0(paste(input$select_athlete, input$sessiontype, input$sessionname, input$sessionnumber, gsub(":", "-", substr(input$Graph1_date_window[1], 1, 16)), ".csv")), " ", "-"))
+      dir.create(paste0("clipped-sessions/", input$select_athlete), showWarnings = FALSE)
       dir.create(folder, showWarnings = FALSE)
       write.csv(
         raw_data,
@@ -723,10 +725,12 @@ app_server <- function( input, output, session ) {
       as.Date(session_date, format = "%d/%m/%Y") <= input$date_range[2]
     )
   
+  if(use.sql()){cols <- 14:93}else{cols <- 15:94}
+  
   if(input$time_grouping == 1){
     data <- data %>% 
       group_by(session_date) %>% 
-      summarise_at(.vars = colnames(.)[14:93], sum
+      summarise_at(.vars = colnames(.)[cols], sum
       )
   }
     
@@ -738,7 +742,7 @@ app_server <- function( input, output, session ) {
     data <- data %>% 
       mutate(session_date = lastmon(as.Date(session_date, format = "%d/%m/%Y"))) %>% 
       group_by(session_date) %>% 
-      summarise_at(.vars = colnames(.)[14:93], sum
+      summarise_at(.vars = colnames(.)[cols], sum
       )
   }
 
