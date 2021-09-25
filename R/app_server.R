@@ -387,8 +387,8 @@ app_server <- function( input, output, session ) {
         row_number, athlete.name, session.type, session.name, session.num, time, 
         C.res.acc, C.peak.mag, C.f.time, C.Jump, C.jh, C.PL, C.acc.zone, C.acc.zone.time, C.ma.Peak, C.raw.peak.mag, C.active.time,
         L.res.acc, L.peak.mag, L.f.time, L.Jump, L.jh, L.PL, L.acc.zone, L.acc.zone.time, L.ma.Peak, L.raw.peak.mag, L.active.time,
-        R.res.acc, R.peak.mag, R.f.time, R.Jump, R.jh, R.PL, R.acc.zone, R.acc.zone.time, R.ma.Peak, R.raw.peak.mag, R.active.time,
-        C.x.raw, C.y.raw, C.z.raw, C.up.id
+        R.res.acc, R.peak.mag, R.f.time, R.Jump, R.jh, R.PL, R.acc.zone, R.acc.zone.time, R.ma.Peak, R.raw.peak.mag, R.active.time#,
+        #C.x.acc, C.y.acc, C.z.acc, C.up.id
       )
     
     data$df <- DF
