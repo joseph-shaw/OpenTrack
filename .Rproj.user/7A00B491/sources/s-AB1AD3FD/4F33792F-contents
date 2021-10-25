@@ -82,7 +82,7 @@ use.sql <- function(){
 
 # Add data processing function --------------------------------------------
 
-process_imu_data <- function(file, run.filter, bf, invert, time_unit){
+process_imu_data <- function(file, run.filter, bf, invert, time_unit, up){
   
   # Read data ---------------------------------------------------------------
   df <- fread(file)
@@ -94,13 +94,31 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
     df$zgyro <- 0
   }
   
+  if(up == 0){
+    c1.mn <- mean(  unlist(df[runmax(unlist(abs(df[,2])), 6000) > 1.05, 2])  , na.rm = T)
+    c2.mn <- mean(  unlist(df[runmax(unlist(abs(df[,3])), 6000) > 1.05, 3])  , na.rm = T)
+    c3.mn <- mean(  unlist(df[runmax(unlist(abs(df[,4])), 6000) > 1.05, 4])  , na.rm = T)
+
+    c1.diff <- 1 - abs(c1.mn)
+    c2.diff <- 1 - abs(c2.mn)
+    c3.diff <- 1 - abs(c3.mn)
+    
+    up <- which(c(c1.diff, c2.diff, c3.diff) == min(c(c1.diff, c2.diff, c3.diff)))
+    if(c(c1.diff, c2.diff, c3.diff)[up] < 0){invert <- 1}
+  }
+  
+    zcol <- 1+up
+    xcol <- ifelse(zcol == 2, 3, 2)
+    ycol <- ifelse(zcol %in% c(2, 3), 4, 3)
+    
+  
   # rename columns,  alter time variable, flip z
   df <- df %>% 
     rename(
       time = 1,
-      xacc = 2,
-      yacc = 3,
-      zacc = 4,
+      xacc = xcol,
+      yacc = ycol,
+      zacc = zcol,
       xgyro = 5,
       ygyro = 6,
       zgyro = 7
@@ -288,10 +306,12 @@ process_imu_data <- function(file, run.filter, bf, invert, time_unit){
       
       #Calculate PlayerLoad
       PL = sqrt(
-        (lead(z.acc, 1) - z.acc) ^2 +
-          (lead(y.acc, 1) - y.acc) ^2 +
-          (lead(x.acc, 1) - x.acc) ^2),
-      PL = PL / 100,
+        (
+          (lead(z.acc, 1) - z.acc) ^ 2 +
+          (lead(y.acc, 1) - y.acc) ^ 2 +
+          (lead(x.acc, 1) - x.acc) ^ 2
+        )/100
+      ),
       #Calculate PL over a resting threshold
       PL.active = ifelse(PL > 0.005, PL, 0),
       #Calculate the vector MA

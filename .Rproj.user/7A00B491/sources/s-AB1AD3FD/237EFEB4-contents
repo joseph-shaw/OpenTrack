@@ -332,7 +332,6 @@ app_server <- function( input, output, session ) {
     ) 
     
     # Filter settings
-    
     run.filter <- TRUE
     data.freq <- 100
     order <- 4
@@ -348,13 +347,14 @@ app_server <- function( input, output, session ) {
     if(input$timeunit == "s"){time_unit <- 1}  
     
     invert <- as.numeric(input$invertup) #Add a variable to flip up and down
+    up <- as.numeric(input$orientation)
     
     # loop through central, left, and right files
     if(is.na(file.list[1])){order <- c(2,3,1)}else{order <- 1:3}
     for(i in order){
       
       if(is.na(file.list[i])){DF <- data.table::fread("frame.csv") %>% mutate(time = ms/1000)}else{
-        DF <- process_imu_data(file = file.list[i], run.filter = run.filter, bf = bf, invert = invert, time_unit = time_unit)  
+        DF <- process_imu_data(file = file.list[i], run.filter = run.filter, bf = bf, invert = invert, time_unit = time_unit, up = up)  
       }
       
       #Rename cols
@@ -362,9 +362,8 @@ app_server <- function( input, output, session ) {
       if(i == 2){names(DF)[2:ncol(DF)] <- paste0("L.", names(DF)[2:ncol(DF)])}      
       if(i == 3){names(DF)[2:ncol(DF)] <- paste0("R.", names(DF)[2:ncol(DF)])}
       
-      #bind DFs 
+      #bind dfs 
       if(i == order[1]){combined.DF <- DF}else{combined.DF <- cbind.fill(combined.DF, DF[,2:ncol(DF)], fill = 0)}
-      
     }
     
     DF <- combined.DF %>% 
@@ -928,7 +927,7 @@ app_server <- function( input, output, session ) {
       scale_fill_manual(
         values = c("#FFBABA", "#5AB69B")
       )+
-     scale_x_date(date_breaks = "1 day", date_labels =  "%d/%m")+
+     scale_x_date(date_breaks = "7 days", date_labels =  "%d/%m")+
      geom_segment(
        data = data,
        y = 0,
@@ -992,7 +991,7 @@ app_server <- function( input, output, session ) {
     }
     
     data <- as.data.frame(t(data))
-    names(data) <- substr(data[1,], 1, 5)
+    names(data) <- substr(data[1,], 1, 10)
     data <- data[-1,]
     rownames(data) <- c("Right", "Left")
     
