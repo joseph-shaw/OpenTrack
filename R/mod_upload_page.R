@@ -29,7 +29,7 @@ mod_upload_page_ui <- function(id){
             selectInput('athlete_count', "How many athletes? (2+ coming soon)", choices = 1, selected = 1, width = 500),
             ),
             column(width = 3,
-            selectInput("timeunit", "What are the input units of time?:", choices = c("s", "1 / 10", "1 / 100", "ms"), selected = "ms", width = 500)
+            selectInput("time_unit", "What are the input units of time?:", choices = c("s", "1 / 10", "1 / 100", "ms"), selected = "ms", width = 500)
             ),
             column(width = 4,
                    selectInput('athlete_focus', "Which athlete's data do you want to view?", choices = 1:8, selected = 1, width = 500),
@@ -47,13 +47,15 @@ mod_upload_page_ui <- function(id){
             column(width = 1,
               shinyFilesButton('Central', label='Central', title='Please select a file', multiple=FALSE, style='font-size:100%')
             #),
+            ,div(style="margin-bottom:10px")
             #column(width = 1,
               ,shinyFilesButton('Left', label='Left', title='Please select a file', multiple=FALSE, style='padding-right:23px; padding-left:23px; font-size:100%')
             #),
+            ,div(style="margin-bottom:10px")
             #column(width = 1,
               ,shinyFilesButton('Right', label='Right', title='Please select a file', multiple=FALSE, style='padding-right:18px; padding-left:18px; font-size:100%')
             ),
-            column(width = 2,
+            column(width = 1,
                    radioButtons("orientation", label = "Vertical Axis",
                                 choices = list("Auto" = 0, "1" = 1, "2" = 2, "3" = 3), 
                                 selected = 0),

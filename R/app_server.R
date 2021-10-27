@@ -341,10 +341,10 @@ app_server <- function( input, output, session ) {
     bf <- signal::butter(order, filt.freq / nyquist.freq, type="low")
     
     
-    if(input$timeunit == "ms"){time_unit <- 1000}  
-    if(input$timeunit == "s / 100"){time_unit <- 100}  
-    if(input$timeunit == "s / 10"){time_unit <- 10}  
-    if(input$timeunit == "s"){time_unit <- 1}  
+    if(input$time_unit == "ms"){time_unit <- 1000}  
+    if(input$time_unit == "s / 100"){time_unit <- 100}  
+    if(input$time_unit == "s / 10"){time_unit <- 10}  
+    if(input$time_unit == "s"){time_unit <- 1}  
     
     invert <- as.numeric(input$invertup) #Add a variable to flip up and down
     up <- as.numeric(input$orientation)
