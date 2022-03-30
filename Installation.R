@@ -57,7 +57,7 @@ devtools::install_github("cvarrichio/rowr")
 
 # install OpenTrack
 #devtools::install_github("joseph-shaw/OpenTrack")
-install.packages(paste0("C:/Users/", user, "/Documents/R/OpenTrack"), 
+install.packages(paste0(r.path, "OpenTrack"), 
                  repos = NULL, 
                  type = "source", dependencies = T)
 
@@ -65,50 +65,3 @@ install.packages(paste0("C:/Users/", user, "/Documents/R/OpenTrack"),
 # -------------------------------------------------------------------------
 # At this point, navigate to the 'OpenTrack' project in the 'R/OpenTrack' 
 # folder, and run the command: OpenTrack::run_app()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

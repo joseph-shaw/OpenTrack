@@ -48,53 +48,106 @@ me.
 Please note that OpenTrack requires version 0.7.5 of shinydashboardPlus.
 If you update shinydashboardPlus to 2.0.0 the app won’t work.
 
-\#`{r installation} ## OpenTrack Installation Script # ## This script is designed to install OpenTrack from a brand new R/Rstudio ## install. After this script has finished, navigate to the 'OpenTrack'  ## project in the 'R/OpenTrack' folder, and run the command:  ## OpenTrack::run_app() # ## ------------------------------------------------------------------------- # ## find the filepath to R #install.packages("stringr", type = "binary") #r.path <- paste0(stringr::str_split(getwd(), "/R/")[[1]][1], "/R/") # ## set the R folder as the wd #setwd(r.path) # ## download a copy of the repo #utils::download.file( #    url = "https://github.com/joseph-shaw/OpenTrack/archive/refs/heads/main.zip", #    destfile = "OpenTrack.zip" #    ) # ## unzip the .zip file #utils::unzip(zipfile = "OpenTrack.zip") # ## rename #file.rename("OpenTrack-main", "OpenTrack") # ## set OpenTrack as the wd #setwd(paste0(r.path, "OpenTrack")) # ## install devtools #install.packages("devtools") # ## install rtools #install.packages("installr") #installr::install.rtools() # ## install specific version of shinydashboardPlus #devtools::install_version( #    "shinydashboardPlus",  #    version = "0.7.5",  #    repos = "http://cran.us.r-project.org",  #    type = "source") # ## install other dependencies #install.packages( #   c('config', 'golem', 'gdtools', 'attempt', 'DT', 'dplyr', 'DBI',  #     'DescTools', 'caTools', 'chron', 'dashboardthemes', 'data.table', #     'dygraphs', 'extrafont', 'fmsb', 'ggiraph', 'ggplot2', 'gridExtra', #     'lubridate', 'odbc', 'plotly', 'png', 'pool', 'rowr', 'shinyFiles', #     'shinyWidgets', 'shinycssloaders', 'shinyjs', 'tidyr', 'xts', 'zoo', #     'formattable', 'signal'), #   type = "binary" #) #devtools::install_github("cvarrichio/rowr")  # ## install OpenTrack ##devtools::install_github("joseph-shaw/OpenTrack") #install.packages(paste0("C:/Users/", user, "/Documents/R/OpenTrack"),  #                 repos = NULL,  #                 type = "source", dependencies = T) # # # ------------------------------------------------------------------------- # At this point, navigate to the 'OpenTrack' project in the 'R/OpenTrack'  # folder, and run the command: OpenTrack::run_app()`
+\#\`\`\`{r installation} \# OpenTrack Installation Script
 
-## Getting Started
+# This script is designed to install OpenTrack from a brand new R/Rstudio
 
-Before you begin you’ll need to alter several files within the
-‘settings’ folder (“\~R/OpenTrack/settings”) - if you don’t do this then
-OpenTrack won’t run properly. You’ll also need to decide whether you
-want to database using SQL or csv. If you want to use SQL then there’s a
-script to recreate the “Athlete\_Database” SQL database required in this
-repo (create\_sql), which you can set up on your own server.
+# install. After this script has finished, navigate to the ‘OpenTrack’
 
-Here are the settings files you’ll need to edit.
+# project in the ‘R/OpenTrack’ folder, and run the command:
 
--   athletes.csv: This file houses data about each athlete. You can edit
-    to this directly, or do so through the ‘Add athlete’ tab in the
-    “Analyse Data” page in the app.
+# OpenTrack::run\_app()
 
--   sql.csv: This file is used to create a SQL connection (set the ‘csv’
-    cell to 0), or tell the app to use csv files (set the ‘csv’ cell to
-    1). To set up a SQL connection, add in the database information in
-    each cell. You’ll be prompted to enter the password each time you
-    open the app (entry box in the r studio window; nothing will work
-    until this is entered correctly). You can add a password permanently
-    in the ‘app\_server.R’ file instead where the SQL connection is made
-    (you will need to rebuild the app).
+# ————————————————————————-
 
--   lists.csv: You can use this file to change the session type options
-    in the drop down on the ‘Analyse Data’ page.
+# find the filepath to R
 
--   filepaths.csv: You will need to change these if you want to edit
-    where the app can look for files. Simply enter the required file
-    paths and a name for the location you want to use. For example, to
-    add your documents folder, add ‘Documents’ in the name column, and
-    “C:/Users/yourname\_/Documents” in the location column. You can set
-    any number of custom locations.
+install.packages(“stringr”, type = “binary”) r.path &lt;-
+paste0(stringr::str\_split(getwd(), “/R/”)\[\[1\]\]\[1\], “/R/”)
 
--   export.csv: This file can be used to change the data that is
-    exported. Simply delete a column to remove it from the export.
+# set the R folder as the wd
 
-Once you’ve configured these settings, you can run the app with:
+setwd(r.path)
 
-``` load
-#library(OpenTrack)
-#run_app()
-#or
-#OpenTrack::run_app()
-```
+# download a copy of the repo
+
+utils::download.file( url =
+“<https://github.com/joseph-shaw/OpenTrack/archive/refs/heads/main.zip>”,
+destfile = “OpenTrack.zip” )
+
+# unzip the .zip file
+
+utils::unzip(zipfile = “OpenTrack.zip”)
+
+# rename
+
+file.rename(“OpenTrack-main”, “OpenTrack”)
+
+# set OpenTrack as the wd
+
+setwd(paste0(r.path, “OpenTrack”))
+
+# install devtools
+
+install.packages(“devtools”)
+
+# install rtools
+
+install.packages(“installr”) installr::install.rtools()
+
+# install specific version of shinydashboardPlus
+
+devtools::install\_version( “shinydashboardPlus”, version = “0.7.5”,
+repos = “<http://cran.us.r-project.org>”, type = “source”)
+
+# install other dependencies
+
+install.packages( c(‘config’, ‘golem’, ‘gdtools’, ‘attempt’, ‘DT’,
+‘dplyr’, ‘DBI’, ‘DescTools’, ‘caTools’, ‘chron’, ‘dashboardthemes’,
+‘data.table’, ‘dygraphs’, ‘extrafont’, ‘fmsb’, ‘ggiraph’, ‘ggplot2’,
+‘gridExtra’, ‘lubridate’, ‘odbc’, ‘plotly’, ‘png’, ‘pool’, ‘rowr’,
+‘shinyFiles’, ‘shinyWidgets’, ‘shinycssloaders’, ‘shinyjs’, ‘tidyr’,
+‘xts’, ‘zoo’, ‘formattable’, ‘signal’), type = “binary” )
+devtools::install\_github(“cvarrichio/rowr”)
+
+# install OpenTrack
+
+\#devtools::install\_github(“joseph-shaw/OpenTrack”)
+install.packages(paste0(r.path, “OpenTrack”), repos = NULL, type =
+“source”, dependencies = T)
+
+# ————————————————————————-
+
+# At this point, navigate to the ‘OpenTrack’ project in the ‘R/OpenTrack’
+
+# folder, and run the command: OpenTrack::run\_app()
+
+
+    ## Getting Started
+
+    Before you begin you'll need to alter several files within the 'settings' folder ("~R/OpenTrack/settings") - if you don't do this then OpenTrack won't run properly. You'll also need to decide whether you want to database using SQL or csv. If you want to use SQL then there's a script to recreate the "Athlete_Database" SQL database required in this repo (create_sql), which you can set up on your own server.
+
+    Here are the settings files you'll need to edit.
+
+     - athletes.csv:       This file houses data about each athlete. You can edit to this directly, or do so through the 'Add athlete' tab in the "Analyse Data" page in the app.
+     
+     - sql.csv:            This file is used to create a SQL connection (set the 'csv' cell to 0), or tell the app to use csv files (set the 'csv' cell to 1). To set up a SQL connection, add in the database information in each cell. You'll be prompted to enter the password each time you open the app (entry box in the r studio window; nothing will work until this is entered correctly). You can add a password permanently in the 'app_server.R' file instead where the SQL connection is made (you will need to rebuild the app).
+
+     - lists.csv:          You can use this file to change the session type options in the drop down on the 'Analyse Data' page.
+     
+     - filepaths.csv:      You will need to change these if you want to edit where the app can look for files. Simply enter the required file paths and a name for the location you want to use. For example, to add your documents folder, add 'Documents' in the name column, and "C:/Users/yourname_/Documents" in the location column. You can set any number of custom locations.
+     
+     - export.csv:         This file can be used to change the data that is exported. Simply delete a column to remove it from the export.
+
+
+    Once you've configured these settings, you can run the app with:
+
+
+    ```load
+    #library(OpenTrack)
+    #run_app()
+    #or
+    #OpenTrack::run_app()
 
 ## Using OpenTrack
 
