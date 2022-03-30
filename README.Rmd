@@ -34,66 +34,78 @@ The current version of OpenTrack calculates impact counts and magnitudes, jump c
 
 These instructions assume you have R and Rstudio installed. If you don't, install the latest versions from here: R - https://cran.r-project.org/; Rstudio - https://www.rstudio.com/products/rstudio/download/#download.
 
-To install OpenTrack, run the script below in Rstudio (or the 'installation.R' file included in this repo). This script will create a local copy of this repo, install Rtools, install the dependencies, and finally, install OpenTrack. Once OpenTrack is installed, open the 'OpenTrack' project file, and then run the command OpenTrack::run_app to load the app. If you run into problems, please feel free to contact me.
+To install OpenTrack, run the script below in Rstudio (or the 'installation.R' file included in this repo). This script will create a local copy of this repo, install Rtools, install the dependencies, and finally, install OpenTrack. Once OpenTrack is installed, open the 'OpenTrack' project file, and then run the command OpenTrack::run_app() to load the app. If you run into problems, please feel free to contact me.
 
 Please note that OpenTrack requires version 0.7.5 of shinydashboardPlus. If you update shinydashboardPlus to 2.0.0 the app won't work.
 
 ```{r installation}
-# # OpenTrack Installation Script
-# 
-# # This script is designed to install OpenTrack from a brand new R/Rstudio install
-# 
-# # Enter your PC user account name here
-# user <- "shaw_"
-# 
-# 
-# # set the R folder as the wd
-# setwd(paste0("C:/Users/", user, "/Documents/R"))
-# 
-# # download a copy of the repo
-# download.file(url = "https://github.com/joseph-shaw/OpenTrack/archive/refs/heads/main.zip"
-#               , destfile = "OpenTrack.zip")
-# 
-# # unzip the .zip file
-# unzip(zipfile = "OpenTrack.zip")
-# 
-# # rename
-# file.rename("OpenTrack-main", "OpenTrack")
-# 
-# # set OpenTrack as the wd
-# setwd(paste0("C:/Users/", user, "/Documents/R/OpenTrack"))
-# 
-# # install devtools
-# install.packages("devtools")
-# 
-# # install rtools
-# install.packages("installr")
-# installr::install.rtools()
-# 
-# install.packages("stringr", type = "binary")
-# 
-# # install specific version of shinydashboardPlus
-# devtools::install_version("shinydashboardPlus", version = "0.7.5", repos = "http://cran.us.r-project.org", type = "source")
-# 
-# # install other dependencies
-# install.packages(
-#    c( 'config', 'golem', 'attempt', 'DT', 'dplyr', 'DBI', 'DescTools', 'caTools', 'chron', 'dashboardthemes', 
-#     'data.table', 'dygraphs', 'extrafont', 'fmsb', 'ggiraph', 'ggplot2', 'gridExtra', 'lubridate', 'odbc', 
-#     'plotly', 'png', 'pool', 'rowr', 'shinyFiles', 'shinyWidgets', 'shinycssloaders', 'shinyjs', 'tidyr', 
-#     'xts', 'zoo', 'formattable', 'signal'),
-#    type = "binary"
-# )
-# install.packages("gdtools")
-# devtools::install_github("cvarrichio/rowr") 
-# 
-# 
-# # install OpenTrack
-# #devtools::install_github("joseph-shaw/OpenTrack")
-# install.packages(paste0("C:/Users/", user, "/Documents/R/OpenTrack"), 
-#                  repos = NULL, 
-#                  type = "source", dependencies = T)
-# 
+# OpenTrack Installation Script
+
+# This script is designed to install OpenTrack from a brand new R/Rstudio
+# install. After this script has finished, navigate to the 'OpenTrack' 
+# project in the 'R/OpenTrack' folder, and run the command: 
 # OpenTrack::run_app()
+
+# -------------------------------------------------------------------------
+
+# find the filepath to R
+install.packages("stringr", type = "binary")
+r.path <- paste0(stringr::str_split(getwd(), "/R/")[[1]][1], "/R/")
+
+# set the R folder as the wd
+setwd(r.path)
+
+# download a copy of the repo
+utils::download.file(
+    url = "https://github.com/joseph-shaw/OpenTrack/archive/refs/heads/main.zip",
+    destfile = "OpenTrack.zip"
+    )
+
+# unzip the .zip file
+utils::unzip(zipfile = "OpenTrack.zip")
+
+# rename
+file.rename("OpenTrack-main", "OpenTrack")
+
+# set OpenTrack as the wd
+setwd(paste0(r.path, "OpenTrack"))
+
+# install devtools
+install.packages("devtools")
+
+# install rtools
+install.packages("installr")
+installr::install.rtools()
+
+# install specific version of shinydashboardPlus
+devtools::install_version(
+    "shinydashboardPlus", 
+    version = "0.7.5", 
+    repos = "http://cran.us.r-project.org", 
+    type = "source")
+
+# install other dependencies
+install.packages(
+   c('config', 'golem', 'gdtools', 'attempt', 'DT', 'dplyr', 'DBI', 
+     'DescTools', 'caTools', 'chron', 'dashboardthemes', 'data.table',
+     'dygraphs', 'extrafont', 'fmsb', 'ggiraph', 'ggplot2', 'gridExtra',
+     'lubridate', 'odbc', 'plotly', 'png', 'pool', 'rowr', 'shinyFiles',
+     'shinyWidgets', 'shinycssloaders', 'shinyjs', 'tidyr', 'xts', 'zoo',
+     'formattable', 'signal'),
+   type = "binary"
+)
+devtools::install_github("cvarrichio/rowr") 
+
+# install OpenTrack
+#devtools::install_github("joseph-shaw/OpenTrack")
+install.packages(paste0("C:/Users/", user, "/Documents/R/OpenTrack"), 
+                 repos = NULL, 
+                 type = "source", dependencies = T)
+
+
+# -------------------------------------------------------------------------
+# At this point, navigate to the 'OpenTrack' project in the 'R/OpenTrack' 
+# folder, and run the command: OpenTrack::run_app()
 ```
 
 ## Getting Started
@@ -166,6 +178,10 @@ In this dashboard you can view longitudinal training load data for multiple athl
 ### Session Dashboard
 
 This tab will let you review specific sessions you've previously saved. Select the athlete and date, and then the sessions completed that day should populate. Click 'Update Session' and the dashboard from that session should update.
+
+
+### Tissue Forces
+If you're using three nine axis IMUs (Waist/L Shank/R Shank) you can also calculate tissue forces. To do this, select one of the options on the upload page. This will result in a tissue force time series added to the exported file in the 'clipped sessions' subfolder of the OpenTrack folder. Please note this will take much longer to run.
 
 ## But I don't have an accelerometer/IMU...
 
