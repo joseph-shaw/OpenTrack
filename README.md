@@ -214,6 +214,9 @@ session to the database and create a copy of the processed time-series
 in the ‘Opentrack/clipped-sessions’ folder. Make sure you don’t have the
 database open elsewhere (e.g., in Excel) when you do this.
 
+![Clipping
+Sessions](./screenshots/analyse_upload.png?raw=true "Clipping Sessions")
+
 ### Interacting with the Database
 
 The ‘Database’ tab shows data currently saved, the new row of data to be
@@ -224,6 +227,8 @@ to select the cell or row you want to edit, and the ‘delete row’ and
 can edit the database outside of OpenTrack. You can click the button in
 the sidebar to download a csv of the database, which can be found in the
 ‘R/OpenTrack’ folder.
+
+![Database](./screenshots/database.png?raw=true "Database")
 
 ### Longitudinal Dashboard
 
@@ -240,6 +245,9 @@ let you select the variable you’re interested in.
 Below, you will also find boxes containing information on external load
 symmetry, and session-by-session data.
 
+![Longitudinal
+Dashboard](./screenshots/long_dash.png?raw=true "Longitudinal Dashboard")
+
 ### Squad Dashboard
 
 In this dashboard you can view longitudinal training load data for
@@ -247,12 +255,18 @@ multiple athletes. Select the athletes you’re interested in, and the
 date range, and hit ‘Update Table’. Large date ranges will take a while
 to load.
 
+![Squad
+Dashboard](./screenshots/squad_dash.png?raw=true "Squad Dashboard")
+
 ### Session Dashboard
 
 This tab will let you review specific sessions you’ve previously saved.
 Select the athlete and date, and then the sessions completed that day
 should populate. Click ‘Update Session’ and the dashboard from that
 session should update.
+
+![session
+Dashboard](./screenshots/session_dash.png?raw=true "Session Dashboard")
 
 ### Tissue Forces
 
