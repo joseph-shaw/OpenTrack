@@ -64,15 +64,84 @@ app_server <- function( input, output, session ) {
     n <- colnames(raw_data)
     colnames(raw_data) <-  gsub("\\.", "_", n)
 
+    sb_upload <- summary() %>% 
+      rename(
+        Date = session_date,
+        About = athlete_name,
+        dummy = is_dummy,
+        ballet = session_name,
+        start_time = starttime,
+        end_time = endtime,
+        total.duration = total_dur,
+        Total.pl = total_pl,
+        Total.pl.active = active_pl,
+        Jumps = Jumps,
+        J.6_10 =  Jumps_6_10 ,
+        J.10_15 = Jumps_10_15,
+        J.15_20 = Jumps_15_20,
+        J.20_25 = Jumps_20_25,
+        J.25_30 = Jumps_25_30,
+        J.30_35 = Jumps_30_35,
+        J.35_40 = Jumps_35_40,
+        J.40_45 = Jumps_40_45,
+        J.45_50 = Jumps_45_50,
+        J.50_55 = Jumps_50_55,
+        J.55_60 = Jumps_55_60,
+        J.60_65 = Jumps_60_65,
+        J.65_70 = Jumps_65_70,
+        J.70_75 = Jumps_70_75,
+        J.75_80 = Jumps_75_80,
+        s.jumps = s_jumps,
+        m.jumps = m_jumps,
+        l.jumps = l_jumps,
+        count_1.5 = C_count_1_5,
+        count_2.0 = C_count_2_0,
+        count_2.5 = C_count_2_5,
+        count_3.0 = C_count_3_0,
+        count_3.5 = C_count_3_5,
+        count_4.0 = C_count_4_0,
+        count_4.5 = C_count_4_5,
+        count_5.0 = C_count_5_0,
+        count_5.5 = C_count_5_5,
+        count_6.0 = C_count_6_0,
+        count_6.5 = C_count_6_5,
+        count_7.0 = C_count_7_0,
+        count_7.5 = C_count_7_5,
+        count_8.0 = C_count_8_0,
+        count_8.5 = C_count_8_5,
+        count_9.0 = C_count_9_0,
+        "c_9.0+" = C_count_10_0,
+      ) %>% 
+      mutate(
+        start_time = format(as_datetime(r_starttime), format = "%H:%M %p"),
+        end_time = format(as_datetime(r_endtime), format = "%H:%M %p"),
+        current_time_ampm = "00:00 AM",
+        current_end_time_ampm = "00:00 AM",
+        user_id = 16847,
+        Date = NA,
+        Date = as.character(Date),
+        Date = paste(sep = "/", day(r_starttime), month(r_starttime), year(r_starttime)),
+        start_date = "09/09/2022",
+        end_date = "09/09/2022",
+      )
     
-    write.csv(summary(), "test1.csv")
+    #write.csv(sb_upload, "test1.csv")
+    
+    user.id <- 28731
+    
+    neon::push_smartabase(
+      sb_upload,
+      form = "33 TL Database",
+      entered_by_user_id = user.id
+    )
+    
     
     if(use.sql()){
       dbWriteTable(conn = conn, "training_load", summary() , append = TRUE) 
       db$db <- dbGetQuery(conn, "Select * from training_load;")
       dbWriteTable(conn = conn, "raw_training_load", raw_data, append = TRUE) 
     }else{
-      write.csv(summary(), "test2.csv")
+      #write.csv(summary(), "test2.csv")
       
       new.row <- summary()
 

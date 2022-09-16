@@ -1,0 +1,26 @@
+{
+    "id": "4F33792F",
+    "path": "~/R/OpenTrack/R/golem_utils_server.R",
+    "project_path": "R/golem_utils_server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1635154985907.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "cursorPosition": "65,5",
+        "scrollLine": "0",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1647425167,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1647425167095,
+    "read_only": false,
+    "read_only_alternatives": []
+}

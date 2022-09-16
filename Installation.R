@@ -43,6 +43,13 @@ devtools::install_version(
     repos = "http://cran.us.r-project.org", 
     type = "source")
 
+# install specific version of cli
+devtools::install_version(
+  "cli", 
+  version = "3.2.0", 
+  repos = "http://cran.us.r-project.org"
+  )
+
 # install other dependencies
 install.packages(
    c('config', 'golem', 'gdtools', 'attempt', 'DT', 'dplyr', 'DBI', 
