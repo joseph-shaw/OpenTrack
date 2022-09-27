@@ -71,10 +71,12 @@ app_server <- function( input, output, session ) {
     
     if(push_to_sb){
     
+      athlete <- input$select_athlete
+      
       sb_id <- neon::pull_smartabase(
         form = "Personal Details",
         filter_user_key = "about",
-        filter_user_value = input$select_athete,
+        filter_user_value = athlete,
         start_date = "01/01/2000",
         end_date = "01/01/2100"
       )
