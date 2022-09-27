@@ -1,0 +1,4 @@
+setwd("C:/Users/shaw_/Documents/R/OpenTrack")
+openProject(path = "OpenTrack.Rproj", newSession = TRUE)
+source("R/start_app.R")
+#OpenTrack::run_app()
