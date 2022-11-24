@@ -1,0 +1,25 @@
+{
+    "id": "20D538B0",
+    "path": "~/R/OpenTrack/R/app_ui.R",
+    "project_path": "R/app_ui.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1619257701583.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "cursorPosition": "24,88",
+        "scrollLine": "0",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1620812290,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1620812290182,
+    "read_only": false,
+    "read_only_alternatives": []
+}

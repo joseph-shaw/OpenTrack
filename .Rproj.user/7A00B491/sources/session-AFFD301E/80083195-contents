@@ -1,0 +1,12 @@
+TWITTER_PAT=C:/Users/shaw_/Documents/.rtweet_token.rds
+SB_USER = 'joseph.shaw'
+
+SB_ID = 28731
+
+SB_URL = 'rb.smartabase.co.uk/roh'
+
+SB_PASS = "FatHippo123!"
+
+#SB_ID = 29084
+#
+#SB_URL = 'my2.smartabase.co.uk/rbs'

@@ -1,0 +1,3 @@
+cat("Loading custom .Rprofile")
+
+OpenTrack::run_app()

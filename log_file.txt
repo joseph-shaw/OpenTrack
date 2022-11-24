@@ -1,7 +1,7 @@
-[1] "Error log: 2022-09-09 11:56:01"
+[1] "Error log: 2022-11-24 09:40:07"
 [1] "Row 1. "
-[1] "Please ensure that 'start_date' values are of the form 'dd/mm/yyyy'"
-[1] "1 / 1 rows with errors in 'start_date' variable"
+[1] "Please ensure that 'start_time' is in 12-hour format (hours must be >= 0 and <= 12)"
+[1] "1 / 1 rows with errors in 'start_time' variable"
 
-   row.number   start_date
-            1     9/9/2022
+   row.number   start_time
+            1     13:00 PM

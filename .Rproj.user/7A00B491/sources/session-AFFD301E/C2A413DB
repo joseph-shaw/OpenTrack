@@ -1,0 +1,25 @@
+{
+    "id": "C2A413DB",
+    "path": "~/R/OpenTrack/dev/run_dev.R",
+    "project_path": "dev/run_dev.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1625065431494.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "7,34",
+        "scrollLine": "0",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1619358767,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1639747328879,
+    "read_only": false,
+    "read_only_alternatives": []
+}

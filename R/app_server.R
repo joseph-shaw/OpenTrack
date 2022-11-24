@@ -67,7 +67,7 @@ app_server <- function( input, output, session ) {
     #write.csv(sb_upload, "test1.csv")
     
     user.id <- 28731 # define this
-    push_to_sb <- TRUE
+    push_to_sb <- sql$smartabase == 1
     
     if(push_to_sb){
     
@@ -133,8 +133,10 @@ app_server <- function( input, output, session ) {
           "c_9.0+" = C_count_10_0,
         ) %>% 
         mutate(
-          start_time = format(as_datetime(r_starttime), format = "%H:%M %p"),
-          end_time = format(as_datetime(r_endtime), format = "%H:%M %p"),
+          start_time = as.character(format(as_datetime(r_starttime), format = "%H:%M %p")),
+          start_time = ifelse(substr(start_time, 7,8) == "PM", paste0(as.numeric(substr(start_time, 1,2))-12, substr(start_time, 3,6), "PM"), start_time),
+          end_time = as.character(format(as_datetime(r_endtime), format = "%H:%M %p")),
+          end_time = ifelse(substr(end_time, 7,8) == "PM", paste0(as.numeric(substr(end_time, 1,2))-12, substr(end_time, 3,6), "PM"), end_time),
           current_time_ampm = "00:00 AM",
           current_end_time_ampm = "00:00 AM",
           user_id = sb_id,
@@ -399,7 +401,7 @@ app_server <- function( input, output, session ) {
     valueBox(length(which(Window()$C.jh <= 30 & Window()$C.jh > 15 & Window()$C.Jump == 1)), "Medium Jumps", icon = icon("angle-double-up"), width = 2, color = "yellow")
   })
   output$value_box.4 <- renderValueBox({
-    valueBox(length(which(Window()$C.jh <= 30 & Window()$C.jh > 100 & Window()$C.Jump == 1)), "Large Jumps", icon = icon("fighter-jet"), width = 2, color = "yellow")
+    valueBox(length(which(Window()$C.jh > 30 & Window()$C.jh < 100 & Window()$C.Jump == 1)), "Large Jumps", icon = icon("fighter-jet"), width = 2, color = "yellow")
   })
   output$value_box.5 <- renderValueBox({
     valueBox(paste0(round(sum(Window()$C.jh[Window()$C.Jump == 1], na.rm = T)/100), " m"), "Height Jumped", icon = icon("sort-amount-up"), width = 2, color = "yellow")

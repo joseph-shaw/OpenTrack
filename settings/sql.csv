@@ -1,2 +1,2 @@
-Driver,Server,Database,UID,PWD,Table1,Table2,csv
-SQL Server Native Client 11.0,DESKTOP-XXXXXXX,Athlete_Database,sa,NA,training_load,athletes,1
+Driver,Server,Database,UID,PWD,Table1,Table2,csv,smartabase
+SQL Server Native Client 11.0,DESKTOP-XXXXXXX,Athlete_Database,sa,NA,training_load,athletes,1,1
